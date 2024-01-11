@@ -23,7 +23,7 @@ jobs:
           distribution: 'temurin'
           cache: gradle
       - run: echo "Setting up cmake"
-      - run: apt install build-essential cmake  
+      - run: sudo apt install build-essential cmake
       - run: echo "The workflow is now ready to test your code."
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
