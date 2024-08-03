@@ -13,4 +13,4 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "icmp-android"
-include ':app'
+include(":app")
