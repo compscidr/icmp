@@ -9,16 +9,12 @@ android {
 
     defaultConfig {
         applicationId = "com.github.compscidr.icmp_android"
-        minSdk = 29
+        minSdk = 24
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        externalNativeBuild {
-            cmake {
-            }
-        }
     }
 
     buildTypes {
@@ -37,15 +33,10 @@ android {
     buildFeatures {
         viewBinding = true
     }
-    externalNativeBuild {
-        cmake {
-            path(file("src/main/cpp/CMakeLists.txt"))
-            version = "3.22.1"
-        }
-    }
 }
 
 dependencies {
+    implementation(project(":icmp-lib"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
