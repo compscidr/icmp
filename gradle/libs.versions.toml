@@ -26,3 +26,5 @@ androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx"
 android-application = { id = "com.android.application", version.ref = "agp" }
 org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
+git-version = { id = "me.qoomon.git-versioning", version = "6.4.2" }
+sonatype-maven-central = { id = "io.deepmedia.tools.deployer", version = "0.13.0" }
