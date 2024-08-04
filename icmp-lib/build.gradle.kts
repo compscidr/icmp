@@ -59,6 +59,7 @@ gitVersioning.apply {
 }
 
 // https://opensource.deepmedia.io/deployer
+// https://blog.deepmedia.io/post/how-to-publish-to-maven-central-in-2024
 deployer {
     projectInfo {
         description = "A library for sending and receiving ICMP packets on Android"
