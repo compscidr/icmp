@@ -1,10 +1,10 @@
-name: Build and Test
+name: Build and Deploy
 
 on:
   push:
-    branches: [ "develop", "main" ]
-  pull_request:
-    types: [ opened, synchronize ]
+    # Pattern matched against refs/tags
+    tags:
+      - '*'           # Push events to every tag not containing /
 
 jobs:
   build:
@@ -31,3 +31,5 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
       - run: echo "Build status report=${{ job.status }}."
+      - name: Deploy to Sonatype / Maven Central
+        run: ./gradlew -PcentralPortalToken=${{ secrets.CENTRAL_PORTAL_TOKEN }} -PcentralPortalPassword=${{ secrets.CENTRAL_PORTAL_PASSWORD }} -PsigningKeyId=${{ secrets.SIGNING_KEY_ID }} -PsigningKeyPassword=${{ secrets.SIGNING_KEY_PASSWORD }} -PsigningKey=${{ secrets.SIGNING_KEY }} deployAll
