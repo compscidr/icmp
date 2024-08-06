@@ -62,8 +62,8 @@ gitVersioning.apply {
 nmcp {
     val props = project.properties
     publishAllPublications {
-        username = props["centralPortalToken"] as String
-        password = props["centralPortalPassword"] as String
+        username = props["centralPortalToken"] as String? ?: ""
+        password = props["centralPortalPassword"] as String? ?: ""
         // or if you want to publish automatically
         publicationType = "AUTOMATIC"
     }
