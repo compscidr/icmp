@@ -22,6 +22,8 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: gradle
+      - name: Install gpg
+        run: sudo apt install build-essential gnupg
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - run: echo "Building Debug APK."
