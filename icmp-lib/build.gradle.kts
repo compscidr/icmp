@@ -59,6 +59,8 @@ gitVersioning.apply {
     }
 }
 
+// see: https://github.com/vanniktech/gradle-maven-publish-plugin/issues/747#issuecomment-2066762725
+// and: https://github.com/GradleUp/nmcp
 nmcp {
     val props = project.properties
     publishAllPublications {
@@ -69,6 +71,7 @@ nmcp {
     }
 }
 
+// see: https://vanniktech.github.io/gradle-maven-publish-plugin/central/#configuring-the-pom
 mavenPublishing {
     coordinates("com.jasonernst.icmp_lib", "icmp_lib", version.toString())
     pom {
@@ -97,26 +100,3 @@ mavenPublishing {
         }
     }
 }
-
-// https://opensource.deepmedia.io/deployer
-// https://blog.deepmedia.io/post/how-to-publish-to-maven-central-in-2024
-//deployer {
-//    projectInfo {
-//        description = "A library for sending and receiving ICMP packets on Android"
-//        url = "https://github.com/compscidr/icmp-android/"
-//        groupId = "com.jasonernst"
-//        artifactId = "icmp-android"
-//        license("GPL-3.0", "https://www.gnu.org/licenses/gpl-3.0.en.html")
-//        developer("compscidr", "ernstjason1@gmail.com", "Jason Ernst", "https://www.jasonernst.com")
-//    }
-//
-//    centralPortalSpec {
-//        // Take these credentials from the Generate User Token page at https://central.sonatype.com/account
-//        auth.user.set(secret("centralPortalToken"))
-//        auth.password.set(secret("centralPortalPassword"))
-//
-//        // Signing is required
-//        signing.key.set(secret("signingKey"))
-//        signing.password.set(secret("signingKeyPassword"))
-//    }
-//}
