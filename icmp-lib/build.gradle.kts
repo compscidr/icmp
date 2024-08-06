@@ -99,4 +99,6 @@ mavenPublishing {
             developerConnection = "scm:git:ssh://git@github.com/compscidr/icmp-android.git"
         }
     }
+
+    signAllPublications()
 }
