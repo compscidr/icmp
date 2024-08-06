@@ -28,4 +28,4 @@ org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.re
 android-library = { id = "com.android.library", version.ref = "agp" }
 git-version = { id = "me.qoomon.git-versioning", version = "6.4.2" }
 sonatype-maven-central = { id = "com.vanniktech.maven.publish", version = "0.28.0" }
-gradleup-nmcp = { id = "com.gradleup.nmcp", version = "0.0.7"}
+gradleup-nmcp = { id = "com.gradleup.nmcp", version = "0.0.9"}
