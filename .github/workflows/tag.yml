@@ -11,11 +11,7 @@ jobs:
     name: Build and Deploy
     runs-on: ubuntu-latest
     steps:
-      - run: echo "The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "This job is running on a ${{ runner.os }} server hosted by GitHub!"
       - uses: actions/checkout@v4
-      - run: echo "The ${{ github.repository }} repository has been cloned."
-      - run: echo "Setting up JDK"
       - name: set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -26,9 +22,8 @@ jobs:
         run: sudo apt install build-essential gnupg
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      - run: echo "Building Debug APK."
       - name: Build with Gradle
         run: ./gradlew build
       - run: echo "Build status report=${{ job.status }}."
       - name: Deploy to Sonatype / Maven Central
-        run: ./gradlew -PcentralPortalToken=${{ secrets.CENTRAL_PORTAL_TOKEN }} -PcentralPortalPassword=${{ secrets.CENTRAL_PORTAL_PASSWORD }} -PsigningKeyId=${{ secrets.SIGNING_KEY_ID }} -PsigningKeyPassword=${{ secrets.SIGNING_KEY_PASSWORD }} -PsigningKey=${{ secrets.SIGNING_KEY }} publishAllPublicationsToCentralPortal
+        run: ./gradlew -PcentralPortalToken='${{ secrets.CENTRAL_PORTAL_TOKEN }}' -PcentralPortalPassword='${{ secrets.CENTRAL_PORTAL_PASSWORD }}' -PsigningKeyId='${{ secrets.SIGNING_KEY_ID }}' -PsigningKeyPassword='${{ secrets.SIGNING_KEY_PASSWORD }}' -PsigningKey='${{ secrets.SIGNING_KEY }}' publishAllPublicationsToCentralPortal
