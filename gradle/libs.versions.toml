@@ -1,15 +1,23 @@
 [versions]
 agp = "8.5.1"
+androidx_test_runner = "1.6.1"
+androidx_test_monitor = "1.7.1"
+androidx_test_ui_automator = "2.3.0"
 appcompat = "1.7.0"
 constraintlayout = "2.1.4"
 coreKtx = "1.13.1"
 espressoCore = "3.6.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
+jupiter = "5.10.3"
 kotlin = "2.0.10"
+logback-android = "3.0.0"
 material = "1.12.0"
 navigationFragmentKtx = "2.7.7"
 navigationUiKtx = "2.7.7"
+slf4jApi = "2.0.13"
+mannodermaus_junit5_plugin = "1.10.2.0"
+mannodermaus_junit5 = "1.5.0"
 
 [libraries]
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
@@ -18,9 +26,21 @@ androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", vers
 androidx-junit = { module = "androidx.test.ext:junit", version.ref = "junitVersion" }
 androidx-navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigationUiKtx" }
 androidx-navigation-fragment-ktx = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
+androidx_test_runner = { module = "androidx.test:runner", version.ref = "androidx_test_runner" }
+androidx_test_monitor = { module = "androidx.test:monitor", version.ref = "androidx_test_monitor" }
+androidx_test_uiautomator = { module = "androidx.test.uiautomator:uiautomator", version.ref = "androidx_test_ui_automator" }
+de-manodermaus-android-junit5 = { module = "de.mannodermaus.junit5:android-test-core", version.ref = "mannodermaus_junit5" }
+de-manodermaus-android-junit5-runner = { module = "de.mannodermaus.junit5:android-test-runner", version.ref = "mannodermaus_junit5" }
 junit = { module = "junit:junit", version.ref = "junit" }
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "jupiter" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "jupiter" }
+logback-android = { module = "com.github.tony19:logback-android", version.ref = "logback-android" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4jApi" }
+
+[bundles]
+android-test = ["junit-jupiter-api", "androidx_test_runner", "androidx_test_monitor", "androidx_test_uiautomator", "de-manodermaus-android-junit5"]
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -29,3 +49,4 @@ android-library = { id = "com.android.library", version.ref = "agp" }
 git-version = { id = "me.qoomon.git-versioning", version = "6.4.3" }
 sonatype-maven-central = { id = "com.vanniktech.maven.publish", version = "0.28.0" }
 gradleup-nmcp = { id = "com.gradleup.nmcp", version = "0.0.9"}
+de-mannodermaus-android-junit5 = { id = "de.mannodermaus.android-junit5", version.ref = "mannodermaus_junit5_plugin" }

@@ -1,4 +1,5 @@
 plugins {
+    alias(libs.plugins.de.mannodermaus.android.junit5)
     alias(libs.plugins.android.library)
     alias(libs.plugins.org.jetbrains.kotlin.android)
     alias(libs.plugins.git.version) // https://stackoverflow.com/a/71212144
@@ -12,12 +13,17 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        minSdk = 24
+        minSdk = 29
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
-
+    packaging {
+        resources {
+            excludes.add("/META-INF/{AL2.0,LGPL2.1}")
+            excludes.add("/META-INF/INDEX.LIST")
+        }
+    }
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -28,27 +34,20 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
-    }
-    externalNativeBuild {
-        cmake {
-            path(file("src/main/cpp/CMakeLists.txt"))
-            version = "3.22.1"
-        }
+        jvmTarget = "17"
     }
 }
 
 dependencies {
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    implementation(libs.slf4j.api)
+    implementation(libs.logback.android)
+    androidTestImplementation(libs.bundles.android.test)
+    androidTestRuntimeOnly(libs.de.manodermaus.android.junit5.runner)
 }
 
 version = "0.0.0-SNAPSHOT"
