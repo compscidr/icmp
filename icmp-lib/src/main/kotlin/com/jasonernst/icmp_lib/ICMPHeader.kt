@@ -1,31 +1,45 @@
 package com.jasonernst.icmp_lib
 
-import com.jasonernst.icmp_lib.ICMP.Companion.ICMPV6_TYPE
-import com.jasonernst.icmp_lib.ICMP.Companion.ICMP_TYPE
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-interface ICMPHeader {
-    var type: ICMPType
-    var code: UByte
-    var checksum: UShort
-    var payload: ByteArray
+abstract class ICMPHeader(val type: ICMPType, val code: UByte, val checksum: UShort) {
 
     companion object {
         // uByte + uByte + uShort
         const val ICMP_HEADER_MIN_LENGTH: UShort = 4u
         const val ICMP_CHECKSUM_OFFSET: UShort = 2u
+
+        fun fromBuffer(byteBuffer: ByteBuffer, isIcmpV4: Boolean = true, order: ByteOrder = ByteOrder.BIG_ENDIAN): ICMPHeader{
+            byteBuffer.order(order)
+            if (byteBuffer.remaining() < ICMP_HEADER_MIN_LENGTH.toInt()) {
+                throw PacketHeaderException("Buffer too small")
+            }
+            val newType = if (isIcmpV4) ICMPv4Type.fromValue(byteBuffer.get().toUByte()) else ICMPv6Type.fromValue(byteBuffer.get().toUByte())
+            val newCode = byteBuffer.get().toUByte()
+            val newChecksum = byteBuffer.short.toUShort()
+            return when (newType) {
+                is ICMPv4Type -> {
+                    ICMPv4Header.fromBuffer(byteBuffer, newType, newCode, newChecksum, order)
+                }
+                is ICMPv6Type -> {
+                    ICMPv6Header.fromBuffer(byteBuffer, newType, newCode, newChecksum, order)
+                }
+                else -> {
+                    throw PacketHeaderException("Unsupported ICMP type")
+                }
+            }
+        }
     }
 
-    fun toByteArray(order: ByteOrder = ByteOrder.BIG_ENDIAN): ByteArray {
-        val buffer = ByteBuffer.allocate(ICMP_HEADER_MIN_LENGTH.toInt() + payload.size)
+    open fun toByteArray(order: ByteOrder = ByteOrder.BIG_ENDIAN): ByteArray {
+        val buffer = ByteBuffer.allocate(ICMP_HEADER_MIN_LENGTH.toInt())
         buffer.order(order)
         buffer.put(type.value.toByte())
         buffer.put(code.toByte())
         // the checksum doesn't matter, the kernel will recompute - although we might want to
         // for testing / verification purposes
         buffer.putShort(checksum.toShort())
-        buffer.put(payload)
         return buffer.array()
     }
 }
@@ -35,53 +49,42 @@ interface ICMPHeader {
  * https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol
  */
 open class ICMPv4Header(
-    var icmPv4Type: ICMPv4Type,
-    override var code: UByte,
-    override var checksum: UShort,
-    override var payload: ByteArray,
-) : ICMPHeader {
-    override var type: ICMPType = icmPv4Type
-
-    fun copy(): ICMPHeader {
-        return ICMPv4Header(icmPv4Type, code, checksum, payload)
+    icmpV4Type: ICMPv4Type,
+    code: UByte,
+    checksum: UShort,
+) : ICMPHeader(type = icmpV4Type, code = code, checksum = checksum) {
+    companion object {
+        fun fromBuffer(buffer: ByteBuffer, icmpV4Type: ICMPv4Type, code: UByte, checksum: UShort, order: ByteOrder = ByteOrder.BIG_ENDIAN): ICMPv4Header {
+            if (icmpV4Type == ICMPv4Type.ECHO_REPLY || icmpV4Type == ICMPv4Type.ECHO_REQUEST) {
+                return ICMPv4EchoPacket.fromBuffer(buffer, icmpV4Type, code, checksum, order)
+            } else {
+                throw PacketHeaderException("Unsupported ICMPv4 type")
+            }
+        }
     }
+}
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as ICMPv4Header
-
-        if (icmPv4Type != other.icmPv4Type) return false
-        if (code != other.code) return false
-        if (checksum != other.checksum) return false
-        if (!payload.contentEquals(other.payload)) return false
-        if (type != other.type) return false
-        if (protocol != other.protocol) return false
-        if (typeString != other.typeString) return false
-
-        return true
+/**
+ * Implementation of ICMPv6 header.
+ *
+ * Only difference is the protocol number it returns, and the ICMPTypes it uses.
+ *
+ * https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol
+ */
+open class ICMPv6Header(
+    icmPv6Type: ICMPv6Type,
+    code: UByte,
+    checksum: UShort
+) : ICMPHeader(type = icmPv6Type, code = code, checksum = checksum) {
+    companion object {
+        fun fromBuffer(buffer: ByteBuffer, icmpV6Type: ICMPv6Type, code: UByte, checksum: UShort, order: ByteOrder = ByteOrder.BIG_ENDIAN): ICMPv6Header {
+            if (icmpV6Type == ICMPv6Type.ECHO_REPLY_V6 || icmpV6Type == ICMPv6Type.ECHO_REQUEST_V6) {
+                return ICMPv6EchoPacket.fromBuffer(buffer, icmpV6Type, code, checksum, order)
+            } else {
+                throw PacketHeaderException("Unsupported ICMPv6 type")
+            }
+        }
     }
-
-    override fun hashCode(): Int {
-        var result = icmPv4Type.hashCode()
-        result = 31 * result + code.hashCode()
-        result = 31 * result + checksum.hashCode()
-        result = 31 * result + payload.contentHashCode()
-        result = 31 * result + type.hashCode()
-        result = 31 * result + protocol.hashCode()
-        result = 31 * result + typeString.hashCode()
-        return result
-    }
-
-    override fun toString(): String {
-        return "ICMPv4Header(icmPv4Type=$icmPv4Type, code=$code, checksum=$checksum, payload=${payload.contentToString()}"
-    }
-
-    val protocol: UByte
-        get() = ICMP_TYPE
-    val typeString: String
-        get() = "ICMPv4"
 }
 
 /**
@@ -90,35 +93,31 @@ open class ICMPv4Header(
  * https://www.rfc-editor.org/rfc/rfc792.html page 14
  * https://www.rfc-editor.org/rfc/rfc2780.html
  *
- * For now, we do not implement the timestamps found on page 15.
- *
- * We can just use the ICMPv4Header to serialize this since this just builds the payload for it.
  */
-data class ICMPv4EchoPacket(
-    override var code: UByte,
-    override var checksum: UShort,
+class ICMPv4EchoPacket(
+    code: UByte,
+    checksum: UShort,
     val sequence: UShort,
     val id: UShort,
     val isReply: Boolean = false,
-    override var payload: ByteArray,
-) :
-    ICMPv4Header(if (isReply) ICMPv4Type.ECHO_REPLY else ICMPv4Type.ECHO_REQUEST, code, checksum, payload) {
+    val data: ByteArray = ByteArray(0),
+) : ICMPv4Header(if (isReply) ICMPv4Type.ECHO_REPLY else ICMPv4Type.ECHO_REQUEST, code, checksum) {
     companion object {
-        private const val ICMP_ECHO_MIN_PAYLOAD_LENGTH = 4 // 2 bytes for sequence, 2 bytes for id
+        private const val ICMP_ECHO_MIN_LENGTH = 4 // 2 bytes for sequence, 2 bytes for id
 
-        fun fromByteArray(
-            code: UByte,
-            checksum: UShort,
-            isReply: Boolean,
-            byteArray: ByteArray,
+        fun fromBuffer(
+            buffer: ByteBuffer, icmpV4Type: ICMPv4Type, code: UByte, checksum: UShort, order: ByteOrder = ByteOrder.BIG_ENDIAN
         ): ICMPv4EchoPacket {
-            if (byteArray.size < ICMP_ECHO_MIN_PAYLOAD_LENGTH) throw PacketHeaderException("Buffer too small")
-            val buffer = ByteBuffer.wrap(byteArray)
+            buffer.order(order)
+            val isReply: Boolean = icmpV4Type == ICMPv4Type.ECHO_REPLY
+            if (buffer.remaining() < ICMP_ECHO_MIN_LENGTH) throw PacketHeaderException("Buffer too small")
             val sequence = buffer.short.toUShort()
             val id = buffer.short.toUShort()
             val remainingBuffer = ByteArray(buffer.remaining())
             buffer.get(remainingBuffer)
-            return ICMPv4EchoPacket(code, checksum, sequence, id, isReply, remainingBuffer)
+            val data = ByteArray(buffer.remaining())
+            buffer.get(data)
+            return ICMPv4EchoPacket(code, checksum, sequence, id, isReply, data)
         }
     }
 
@@ -132,7 +131,7 @@ data class ICMPv4EchoPacket(
         if (sequence != other.sequence) return false
         if (id != other.id) return false
         if (isReply != other.isReply) return false
-        if (!payload.contentEquals(other.payload)) return false
+        if (!data.contentEquals(other.data)) return false
 
         return true
     }
@@ -142,98 +141,59 @@ data class ICMPv4EchoPacket(
         result = 31 * result + sequence.hashCode()
         result = 31 * result + id.hashCode()
         result = 31 * result + isReply.hashCode()
-        result = 31 * result + payload.contentHashCode()
+        result = 31 * result + data.contentHashCode()
         return result
+    }
+
+    override fun toByteArray(order: ByteOrder): ByteArray {
+        ByteBuffer.allocate(ICMP_HEADER_MIN_LENGTH.toInt() + ICMP_ECHO_MIN_LENGTH + data.size).apply {
+            order(order)
+            put(super.toByteArray(order))
+            putShort(sequence.toShort())
+            putShort(id.toShort())
+            put(data)
+            return array()
+        }
     }
 }
 
-/**
- * Implementation of ICMPv6 header.
- *
- * Only difference is the protocol number it returns, and the ICMPTypes it uses.
- *
- * https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol
- */
-open class ICMPv6Header(
-    var icmPv6Type: ICMPv6Type,
-    override var code: UByte,
-    override var checksum: UShort,
-    override var payload: ByteArray = ByteArray(0),
-) : ICMPHeader {
-    override var type: ICMPType = icmPv6Type
-
-    val protocol: UByte
-        get() = ICMPV6_TYPE
-    val typeString: String
-        get() = "ICMPv6"
-
-    fun copy(): ICMPHeader {
-        return ICMPv6Header(icmPv6Type, code, checksum, payload)
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as ICMPv6Header
-
-        if (icmPv6Type != other.icmPv6Type) return false
-        if (code != other.code) return false
-        if (checksum != other.checksum) return false
-        if (!payload.contentEquals(other.payload)) return false
-        if (type != other.type) return false
-        if (protocol != other.protocol) return false
-        if (typeString != other.typeString) return false
-
-        return true
-    }
-
-    override fun toString(): String {
-        return "ICMPv6Header(icmPv6Type=$icmPv6Type, code=$code, checksum=$checksum, payload=${payload.contentToString()})"
-    }
-
-    override fun hashCode(): Int {
-        var result = icmPv6Type.hashCode()
-        result = 31 * result + code.hashCode()
-        result = 31 * result + checksum.hashCode()
-        result = 31 * result + payload.contentHashCode()
-        result = 31 * result + type.hashCode()
-        result = 31 * result + protocol.hashCode()
-        result = 31 * result + typeString.hashCode()
-        return result
-    }
-}
-
-data class ICMPv6EchoPacket(
-    override var code: UByte,
-    override var checksum: UShort,
+class ICMPv6EchoPacket(
+    code: UByte,
+    checksum: UShort,
     val sequence: UShort,
     val id: UShort,
     val isReply: Boolean = false,
-    override var payload: ByteArray,
-) :
-    ICMPv6Header(
-        if (isReply) ICMPv6Type.ECHO_REPLY_V6 else ICMPv6Type.ECHO_REQUEST_V6,
-        0u,
-        0u,
-        payload,
-    ) {
+    val payload: ByteArray = ByteArray(0),
+) : ICMPv6Header(if (isReply) ICMPv6Type.ECHO_REPLY_V6 else ICMPv6Type.ECHO_REQUEST_V6, code, checksum) {
     companion object {
-        const val ICMP_ECHO_MINPAYLOAD_LENGTH = 4 // 2 bytes for sequence, 2 bytes for id
+        const val ICMP_ECHO_LENGTH = 4 // 2 bytes for sequence, 2 bytes for id
 
-        fun fromByteArray(
+        fun fromBuffer(
+            buffer: ByteBuffer,
+            icmpV6Type: ICMPv6Type,
             code: UByte,
             checksum: UShort,
-            isReply: Boolean,
-            byteArray: ByteArray,
+            order: ByteOrder = ByteOrder.BIG_ENDIAN
         ): ICMPv6EchoPacket {
-            if (byteArray.size < ICMP_ECHO_MINPAYLOAD_LENGTH) throw PacketHeaderException("Payload too small")
-            val buffer = ByteBuffer.wrap(byteArray)
+            buffer.order(order)
+            val isReply: Boolean = icmpV6Type == ICMPv6Type.ECHO_REPLY_V6
+            if (buffer.remaining() < ICMP_ECHO_LENGTH) throw PacketHeaderException("Buffer too small")
             val sequence = buffer.short.toUShort()
             val id = buffer.short.toUShort()
             val remainingBuffer = ByteArray(buffer.remaining())
             buffer.get(remainingBuffer)
             return ICMPv6EchoPacket(code, checksum, sequence, id, isReply, remainingBuffer)
+        }
+    }
+
+    override fun toByteArray(order: ByteOrder): ByteArray {
+        ByteBuffer.allocate(ICMP_HEADER_MIN_LENGTH.toInt() + ICMP_ECHO_LENGTH + payload.size).apply {
+            order(order)
+            put(super.toByteArray(order))
+            putShort(sequence.toShort())
+            putShort(id.toShort())
+            put(payload)
+            return array()
         }
     }
 

@@ -46,6 +46,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.slf4j.api)
     implementation(libs.logback.android)
+    implementation(libs.packetdumper)
     androidTestImplementation(libs.bundles.android.test)
     androidTestRuntimeOnly(libs.de.manodermaus.android.junit5.runner)
 }

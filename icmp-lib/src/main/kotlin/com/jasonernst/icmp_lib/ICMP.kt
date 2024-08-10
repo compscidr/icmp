@@ -15,6 +15,8 @@ import android.system.OsConstants.IPPROTO_ICMPV6
 import android.system.OsConstants.IPPROTO_IP
 import android.system.OsConstants.SOCK_DGRAM
 import android.system.StructTimeval
+import com.jasonernst.packetdumper.ethernet.EtherType
+import com.jasonernst.packetdumper.stringdumper.StringPacketDumper
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.slf4j.LoggerFactory
@@ -94,7 +96,8 @@ class ICMP {
             )
         }
         val bytesToSend = ByteBuffer.wrap(icmpHeader.toByteArray())
-        logger.debug("bytesToSend: ${icmpHeader.toByteArray().size}")
+        val stringDumper = StringPacketDumper()
+        logger.debug("bytesToSend: ${icmpHeader.toByteArray().size}\n${stringDumper.dumpBufferToString(bytesToSend, 0 , bytesToSend.limit())}")
         val bytesSent = sendto(fd, bytesToSend, 0, inetAddress, ICMP_PORT)
         logger.debug("bytesSent: $bytesSent")
 
