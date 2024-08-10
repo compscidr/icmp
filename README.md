@@ -18,3 +18,7 @@ A simple library to ping a host using ICMP on Android.
   because of the underlying Flow API or something - it could be that there is some blocking until
   all of the attempts have failed for a particular host or something. I also would like to have
   tests for this library, so I'm going to try to implement that myself.
+- Upon further investigation - it appears that it might be related to the DNS resolution. There is
+  no separation of timeout for DNS resolution and the actual ping. I have implemented this library
+  such that there are separate function calls which are used, and separate configurable timeouts for
+  each.
