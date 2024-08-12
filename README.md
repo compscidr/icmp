@@ -6,10 +6,14 @@ A simple library to ping a host using ICMP on Android.
 - [x] Release the library to maven central so it can be used
 - [ ] Implement icmp v4
 - [ ] Implement icmp v6
-- [ ] Implement tests for both Ipv4 and Ipv6
-- [ ] Investigate whether there is a similar function call for android.system.Os.socket() for 
+- [x] Implement tests for both Ipv4 and Ipv6
+  - tests working on both JVM and Android Instrumented Tests 
+- [ ] Hookup instrumented tests in CI/CD with actual phone on self-hosted runner
+- [x] Investigate whether there is a similar function call for android.system.Os.socket() for 
       non-Android Kotlin. This will make it possible to run tests on a non-Android JVM, ie) the unit
       tests.
+  - Implemented an abstraction that still uses cmake / native code for the non-android JVM. This
+    also means this could be released as a cross-platform android / JVM library.
 
 ## Inspirations
 - Originally motivated by https://github.com/kirillF/icmp-android but updated since it no longer
