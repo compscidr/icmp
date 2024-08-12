@@ -22,12 +22,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: gradle
-#      - run: echo "Setting up cmake"
-#      - run: sudo apt install build-essential cmake
-#      - run: echo "The workflow is now ready to test your code."
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - run: echo "Building Debug APK."
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew assemble # we don't use build because that will run the tests, we want that separate
       - run: echo "Build status report=${{ job.status }}."
+      - name: JVM Unit tests
+        run: ./gradlew check
+#      - name: Android Instrumented tests # disabled until we can setup a self hosted runner
+#        run: ./gradlew connectedCheck

@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.github.compscidr.icmp_android"
-        minSdk = 24
+        minSdk = 29
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -43,7 +43,8 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
-    testImplementation(libs.junit)
+    testImplementation(libs.bundles.unit.test)
+    testImplementation(libs.logback.classic)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
