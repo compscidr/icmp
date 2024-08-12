@@ -1,5 +1,6 @@
-package com.jasonernst.icmp_lib
+package icmp_lib
 
+import com.jasonernst.icmp_lib.ICMPAndroid
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 
