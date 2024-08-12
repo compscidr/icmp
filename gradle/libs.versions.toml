@@ -31,7 +31,7 @@ androidx_test_monitor = { module = "androidx.test:monitor", version.ref = "andro
 androidx_test_uiautomator = { module = "androidx.test.uiautomator:uiautomator", version.ref = "androidx_test_ui_automator" }
 de-manodermaus-android-junit5 = { module = "de.mannodermaus.junit5:android-test-core", version.ref = "mannodermaus_junit5" }
 de-manodermaus-android-junit5-runner = { module = "de.mannodermaus.junit5:android-test-runner", version.ref = "mannodermaus_junit5" }
-junit-jupiter = { module = "org.junit.jupiter:unit-jupiter", version.ref = "jupiter" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "jupiter" }
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "jupiter" }
 logback-android = { module = "com.github.tony19:logback-android", version.ref = "logback-android" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback-classic" }

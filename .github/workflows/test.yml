@@ -31,3 +31,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
       - run: echo "Build status report=${{ job.status }}."
+      - name: JVM Unit tests
+        run: ./gradlew check
+#      - name: Android Instrumented tests # disabled until we can setup a self hosted runner
+#        run: ./gradlew connectedCheck
