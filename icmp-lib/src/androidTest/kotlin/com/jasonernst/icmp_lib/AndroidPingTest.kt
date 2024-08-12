@@ -1,6 +1,5 @@
-package icmp_lib
+package com.jasonernst.icmp_lib
 
-import com.jasonernst.icmp_lib.ICMPAndroid
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 
@@ -9,7 +8,7 @@ import org.slf4j.LoggerFactory
  *
  * See [testing documentation](http://d.android.com/tools/testing).
  */
-class ExampleInstrumentedTest {
+class AndroidPingTest {
     private val logger = LoggerFactory.getLogger(javaClass)
     private val icmp = ICMPAndroid
 

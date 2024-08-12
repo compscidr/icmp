@@ -1,6 +1,7 @@
 package com.jasonernst.icmp_lib
 
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 /**
@@ -8,7 +9,7 @@ import org.junit.jupiter.api.Test
  *
  * See [testing documentation](http://d.android.com/tools/testing).
  */
-class ExampleUnitTest {
+class JVMPingTest {
     private val icmp = ICMPLinux
 
     companion object {
