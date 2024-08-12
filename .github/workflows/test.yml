@@ -28,8 +28,6 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew assemble # we don't use build because that will run the tests, we want that separate
       - run: echo "Build status report=${{ job.status }}."
-      - name: Setup WARP        # supposedly makes Ipv6 work: https://www.jucktion.com/dev/ipv6-github-actions/
-        uses: fscarmen/warp-on-actions@v1.0
       - name: JVM Unit tests
         run: ./gradlew check
 #      - name: Android Instrumented tests # disabled until we can setup a self hosted runner

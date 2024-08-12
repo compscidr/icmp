@@ -24,6 +24,7 @@ class JVMPingTest {
         icmp.ping("localhost")
     }
 
+    @Disabled("IPv6 not supported on GH actions hosted runners")
     @Test
     fun pingIpv6Localhost() {
         icmp.ping("::1")
