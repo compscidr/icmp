@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory
  */
 class ExampleInstrumentedTest {
     private val logger = LoggerFactory.getLogger(javaClass)
-    private val icmp = ICMP()
+    private val icmp = ICMPAndroid
 
     @Test
     fun pingIpv4Localhost() {

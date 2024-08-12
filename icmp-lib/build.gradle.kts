@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     alias(libs.plugins.de.mannodermaus.android.junit5)
     alias(libs.plugins.android.library)
@@ -5,6 +7,7 @@ plugins {
     alias(libs.plugins.git.version) // https://stackoverflow.com/a/71212144
     alias(libs.plugins.sonatype.maven.central)
     alias(libs.plugins.gradleup.nmcp)
+    alias(libs.plugins.cmake)
     id("signing") // https://medium.com/nerd-for-tech/oh-no-another-publishing-android-artifacts-to-maven-central-guide-9d7f300ebd74
 }
 
@@ -47,8 +50,20 @@ dependencies {
     implementation(libs.slf4j.api)
     implementation(libs.logback.android)
     implementation(libs.packetdumper)
+
+    testImplementation(libs.bundles.unit.test)
+    testImplementation(libs.logback.classic)
+
     androidTestImplementation(libs.bundles.android.test)
     androidTestRuntimeOnly(libs.de.manodermaus.android.junit5.runner)
+}
+
+configurations {
+    testImplementation {
+        dependencies {
+            exclude(module = "logback-android")
+        }
+    }
 }
 
 version = "0.0.0-SNAPSHOT"
@@ -101,4 +116,23 @@ mavenPublishing {
     }
 
     signAllPublications()
+}
+
+cmake {
+    sourceFolder=file("$projectDir/src/main")
+}
+
+tasks.withType<Test>().configureEach {
+    // adds the cpp generated library to the classpath so the tests can find it
+    systemProperty("java.library.path", project(":icmp-lib").layout.buildDirectory.asFile.get().absolutePath + "/cmake")
+    dependsOn(":icmp-lib:cmakeBuild")
+
+    testLogging {
+        showStandardStreams = true
+        outputs.upToDateWhen {true}
+    }
+}
+
+tasks.withType<KotlinCompile>().configureEach {
+    dependsOn(":icmp-lib:cmakeBuild")
 }
