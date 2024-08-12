@@ -1,5 +1,4 @@
 package com.jasonernst.icmp_lib
-import android.system.OsConstants.IPPROTO_IP
 import com.jasonernst.packetdumper.stringdumper.StringPacketDumper
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -7,8 +6,6 @@ import org.slf4j.LoggerFactory
 import java.io.FileDescriptor
 import java.net.Inet4Address
 import java.net.InetAddress
-import java.net.InetSocketAddress
-import java.net.SocketOptions.IP_TOS
 import java.nio.ByteBuffer
 
 abstract class ICMP {
@@ -17,8 +14,6 @@ abstract class ICMP {
     companion object {
         const val ICMP_PORT = 7
     }
-    private val android:Boolean = ("The Android Project" == System.getProperty("java.specification.vendor"))
-
     abstract fun obtainSocketIpv4Socket(): FileDescriptor
     abstract fun obtainSocketIpv6Socket(): FileDescriptor
     abstract fun setsockoptInt(fd: FileDescriptor, level: Int, optname: Int, optval: Int): Int
