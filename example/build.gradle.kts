@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.github.compscidr.icmp_android"
-        minSdk = 24
+        minSdk = 29
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
