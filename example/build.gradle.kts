@@ -36,7 +36,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":icmp-lib"))
+    implementation(project(":icmp-android"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

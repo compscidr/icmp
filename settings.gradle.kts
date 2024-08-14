@@ -12,6 +12,8 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "icmp-android"
+rootProject.name = "icmp-lib"
 include(":example")
-include(":icmp-lib")
+include(":icmp-android")
+include(":icmp-common")
+include(":icmp-linux")
