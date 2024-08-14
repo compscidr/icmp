@@ -38,7 +38,7 @@ logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "lo
 material = { module = "com.google.android.material:material", version.ref = "material" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4jApi" }
-packetdumper = { module = "com.jasonernst.packetdumper:packetdumper", version = "0.0.2" }
+packetdumper = { module = "com.jasonernst.packetdumper:packetdumper", version = "0.0.4" }
 
 [bundles]
 android-test = ["junit-jupiter-api", "androidx_test_runner", "androidx_test_monitor", "androidx_test_uiautomator", "de-manodermaus-android-junit5"]
