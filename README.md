@@ -1,4 +1,7 @@
 # icmp-android 
+[![Maven Central](https://img.shields.io/maven-central/v/com.jasonernst.icmp/icmp_common?style=flat&logo=maven&label=maven-central&color=blue)](https://central.sonatype.com/artifact/com.jasonernst.icmp/icmp_common/overview)
+[![codecov](https://codecov.io/gh/compscidr/icmp/graph/badge.svg?token=MZjRWQKz26)](https://codecov.io/gh/compscidr/icmp)
+
 A simple library to ping a host using ICMP on Android or Linux JVM.
 
 ## Usage
