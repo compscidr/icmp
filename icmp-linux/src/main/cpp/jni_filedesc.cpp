@@ -77,27 +77,43 @@ JNIEXPORT jint JNICALL Java_com_jasonernst_icmp_1linux_ICMPLinux_setsocketRecvTi
 
 extern "C"
 JNIEXPORT jint JNICALL Java_com_jasonernst_icmp_1linux_ICMPLinux_sendTo(JNIEnv *env, jclass _ignore, jobject fileDescriptor, jbyteArray data, jint flags, jbyteArray address, jint port) {
-    struct sockaddr_in addr;
+
     jbyte *data_ptr, *addr_ptr;
     jsize data_len, addr_len;
-    int ret;
-
     data_ptr = env->GetByteArrayElements(data, NULL);
     data_len = env->GetArrayLength(data);
     addr_ptr = env->GetByteArrayElements(address, NULL);
     addr_len = env->GetArrayLength(address);
 
-    memset(&addr, 0, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
-    memcpy(&addr.sin_addr, addr_ptr, addr_len);
     int fd = getFDFromFileDescriptor(env, fileDescriptor);
-    ret = sendto(fd, data_ptr, data_len, flags, (struct sockaddr *)&addr, sizeof(addr));
-    jclass class_ioex = env->FindClass("java/io/IOException");
+
+    // determine if we have an ipv4 or ipv6 address by length
+    int ret;
+    if (addr_len == 4) {
+        printf("IPv4 address\n");
+        struct sockaddr_in addr;
+        memset(&addr, 0, sizeof(addr));
+        addr.sin_family = AF_INET;
+        addr.sin_port = htons(port);
+        memcpy(&addr.sin_addr, addr_ptr, addr_len);
+        ret = sendto(fd, data_ptr, data_len, flags, (struct sockaddr *)&addr, sizeof(addr));
+    } else if (addr_len == 16) {
+        printf("IPv6 address\n");
+        struct sockaddr_in6 addr;
+        memset(&addr, 0, sizeof(addr));
+        addr.sin6_family = AF_INET6;
+        addr.sin6_port = htons(port);
+        memcpy(&addr.sin6_addr, addr_ptr, addr_len);
+        ret = sendto(fd, data_ptr, data_len, flags, (struct sockaddr *)&addr, sizeof(addr));
+    } else {
+        printf("Unknown address length\n");
+    }
+
     if (ret < 0) {
-        // open returned an error. Throw an IOException with the error string
+        // sendTo returned an error. Throw an IOException with the error string
         char buf[1024];
-        sprintf(buf, "open: %s", strerror(errno));
+        sprintf(buf, "sendTo: %s", strerror(errno));
+        jclass class_ioex = env->FindClass("java/io/IOException");
         env->ThrowNew(class_ioex, buf);
     }
 
@@ -124,6 +140,14 @@ JNIEXPORT jint JNICALL Java_com_jasonernst_icmp_1linux_ICMPLinux_recvFrom(JNIEnv
     addr.sin_port = htons(port);
     int fd = getFDFromFileDescriptor(env, fileDescriptor);
     ret = recvfrom(fd, data_ptr, data_len, flags, (struct sockaddr *)&addr, (socklen_t *)&addr_len);
+
+    if (ret < 0) {
+        // recvFrom returned an error. Throw an IOException with the error string
+        char buf[1024];
+        sprintf(buf, "recvFrom: %s", strerror(errno));
+        jclass class_ioex = env->FindClass("java/io/IOException");
+        env->ThrowNew(class_ioex, buf);
+    }
 
     env->ReleaseByteArrayElements(data, data_ptr, 0);
     env->ReleaseByteArrayElements(address, addr_ptr, 0);
