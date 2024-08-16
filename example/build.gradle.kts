@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.org.jetbrains.kotlin.android)
+    alias(libs.plugins.git.version) // https://stackoverflow.com/a/71212144
 }
 
 android {
@@ -35,8 +36,16 @@ android {
     }
 }
 
+version = "0.0.0-SNAPSHOT"
+gitVersioning.apply {
+    refs {
+        branch(".+") { version = "\${ref}-SNAPSHOT" }
+        tag("v(?<version>.*)") { version = "\${ref.version}" }
+    }
+}
+
 dependencies {
-    implementation(project(":icmp-android"))
+    implementation("com.jasonernst.icmp:icmp_common:$version")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

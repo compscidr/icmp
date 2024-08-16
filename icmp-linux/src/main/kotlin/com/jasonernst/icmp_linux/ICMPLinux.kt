@@ -1,11 +1,35 @@
 package com.jasonernst.icmp_linux
 
 import com.jasonernst.icmp_common.ICMP
+import org.slf4j.LoggerFactory
+import java.io.File
 import java.io.FileDescriptor
 import java.net.InetAddress
 import java.nio.ByteBuffer
 
+@Suppress("UnsafeDynamicallyLoadedCode")
 object ICMPLinux: ICMP() {
+    private val logger = LoggerFactory.getLogger(javaClass)
+
+    init {
+        try {
+            val inputStream = javaClass.getResourceAsStream("/libicmp.so")
+            val bytes = inputStream?.readBytes()
+            if (bytes != null) {
+                val file = File("/tmp/libicmp.so")
+                file.writeBytes(bytes)
+                System.load(file.absolutePath)
+            } else {
+                logger.error("Failed to load icmp library: libicmp.so not found")
+                // fall back to trying to read from the library path
+                // (this is used for the unit tests because they don't use the jar like things
+                // consuming this library will)
+                System.loadLibrary("icmp")
+            }
+        } catch (e: UnsatisfiedLinkError) {
+            logger.error("Failed to load icmp library: ${e.message}")
+        }
+    }
 
     // see: netinet/in.h and sys/socket.h
     // note: these values are different on android.system.Os, and only make sense on linux
