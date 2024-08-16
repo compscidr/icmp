@@ -21,9 +21,9 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build and Publish the Common Library to the local Maven repository
-        run: ./gradlew :icmp-common:publishToMavenLocal
+        run: ./gradlew -PcentralPortalToken='${{ secrets.CENTRAL_PORTAL_TOKEN }}' -PcentralPortalPassword='${{ secrets.CENTRAL_PORTAL_PASSWORD }}' -PsigningInMemoryKeyId='${{ secrets.SIGNING_KEY_ID }}' -PsigningInMemoryKeyPassword='${{ secrets.SIGNING_KEY_PASSWORD }}' -PsigningInMemoryKey='${{ secrets.SIGNING_KEY_IN_MEMORY }}' :icmp-common:publishToMavenLocal
       - name: Build and Publish the Android and Linux Libraries to the local Maven repository
-        run: ./gradlew :icmp-android:publishToMavenLocal :icmp-linux:publishToMavenLocal
+        run: ./gradlew -PcentralPortalToken='${{ secrets.CENTRAL_PORTAL_TOKEN }}' -PcentralPortalPassword='${{ secrets.CENTRAL_PORTAL_PASSWORD }}' -PsigningInMemoryKeyId='${{ secrets.SIGNING_KEY_ID }}' -PsigningInMemoryKeyPassword='${{ secrets.SIGNING_KEY_PASSWORD }}' -PsigningInMemoryKey='${{ secrets.SIGNING_KEY_IN_MEMORY }}' :icmp-android:publishToMavenLocal :icmp-linux:publishToMavenLocal
       - name: Build with Gradle
         run: ./gradlew build
       - name: Deploy to Sonatype / Maven Central
