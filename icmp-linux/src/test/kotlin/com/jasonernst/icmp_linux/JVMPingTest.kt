@@ -1,6 +1,5 @@
 package com.jasonernst.icmp_linux
 
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 /**
@@ -15,7 +14,6 @@ class JVMPingTest {
         icmp.ping("localhost")
     }
 
-    @Disabled("IPv6 not supported on GH actions hosted runners")
     @Test
     fun pingIpv6Localhost() {
         icmp.ping("::1")
