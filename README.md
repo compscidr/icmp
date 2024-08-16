@@ -48,6 +48,22 @@ ICMPLinux.ping("google.com", 500, 1000)
 ICMPLinux.ping(InetAddress.getLocalHost(), 1000)
 ```
 
+Building a library that may be used on both Android and Linux JVM:
+```kotlin
+api("com.jasonernst.icmp:icmp-common")
+```
+
+```kotlin
+fun someFunction(icmp: ICMP) {
+    icmp.ping("google.com", 500, 1000)
+
+    // this will ping the local host with a timeout of 1000ms. Note that the InetAddress object is used
+    // here, and that when we do this, there is no DNS request made because we already have the IP address
+    icmp.ping(InetAddress.getLocalHost(), 1000)
+}
+```
+And each consumer of the library can pass the appropriate ICMP implementation.
+
 ## Building locally:
 If changes are made to icmp-common, you will need to publish it locally. 
 This can be done by running the `publishToMavenLocal` task in the icmp-common module.
