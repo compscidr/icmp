@@ -14,7 +14,7 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
-version = "0.0.0-SNAPSHOT"
+version = "0.0.10"
 gitVersioning.apply {
     refs {
         branch(".+") { version = "\${ref}-SNAPSHOT" }
