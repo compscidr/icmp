@@ -11,12 +11,8 @@ jobs:
     name: Build and Test
     runs-on: ubuntu-latest
     steps:
-      - run: echo "The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "This job is running on a ${{ runner.os }} server hosted by GitHub!"
       - uses: actions/checkout@v4
-      - run: echo "The ${{ github.repository }} repository has been cloned."
-      - run: echo "Setting up JDK"
-      - name: set up JDK 17
+      - name: set up JDK
         uses: actions/setup-java@v4
         with:
           java-version: '17'
@@ -26,9 +22,10 @@ jobs:
         run: chmod +x gradlew
       - name: Build and Publish the Common Library to the local Maven repository
         run: ./gradlew :icmp-common:publishToMavenLocal
+      - name: Build and Publish the Android and Linux Libraries to the local Maven repository
+        run: ./gradlew :icmp-android:publishToMavenLocal :icmp-linux:publishToMavenLocal
       - name: Build with Gradle
         run: ./gradlew assemble # we don't use build because that will run the tests, we want that separate
-      - run: echo "Build status report=${{ job.status }}."
       - name: JVM Unit tests
         run: ./gradlew check
 #      - name: Android Instrumented tests # disabled until we can setup a self hosted runner
