@@ -43,20 +43,20 @@ android {
     }
 }
 
-dependencies {
-    implementation(project(":icmp-common"))
-    implementation(libs.logback.android)
-
-    androidTestImplementation(libs.bundles.android.test)
-    androidTestRuntimeOnly(libs.de.manodermaus.android.junit5.runner)
-}
-
 version = "0.0.0-SNAPSHOT"
 gitVersioning.apply {
     refs {
         branch(".+") { version = "\${ref}-SNAPSHOT" }
         tag("v(?<version>.*)") { version = "\${ref.version}" }
     }
+}
+
+dependencies {
+    api("com.jasonernst.icmp:icmp_common:$version")
+    implementation(libs.logback.android)
+
+    androidTestImplementation(libs.bundles.android.test)
+    androidTestRuntimeOnly(libs.de.manodermaus.android.junit5.runner)
 }
 
 // see: https://github.com/vanniktech/gradle-maven-publish-plugin/issues/747#issuecomment-2066762725
@@ -73,7 +73,7 @@ nmcp {
 
 // see: https://vanniktech.github.io/gradle-maven-publish-plugin/central/#configuring-the-pom
 mavenPublishing {
-    coordinates("com.jasonernst.icmp_lib", "icmp_android", version.toString())
+    coordinates("com.jasonernst.icmp", "icmp_android", version.toString())
     pom {
         name = "ICMP Android"
         description = "A library for sending and receiving ICMP packets on Android"

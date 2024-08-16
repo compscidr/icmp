@@ -1,6 +1,5 @@
 package com.jasonernst.icmp_linux
 
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
@@ -11,14 +10,6 @@ import org.junit.jupiter.api.Test
  */
 class JVMPingTest {
     private val icmp = ICMPLinux
-
-    companion object {
-
-        @JvmStatic @BeforeAll
-        fun setup() {
-            System.loadLibrary("icmp-lib")
-        }
-    }
 
     @Test fun pingIpv4Localhost() {
         icmp.ping("localhost")

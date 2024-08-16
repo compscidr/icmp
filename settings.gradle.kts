@@ -10,10 +10,12 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        mavenLocal()
     }
 }
-rootProject.name = "icmp-lib"
+rootProject.name = "icmp"
 include(":example")
 include(":icmp-android")
 include(":icmp-common")
 include(":icmp-linux")
+include(":example-linux")

@@ -1,5 +1,30 @@
 # icmp-android 
-A simple library to ping a host using ICMP on Android.
+A simple library to ping a host using ICMP on Android or Linux JVM.
+
+## Usage
+
+### Android
+The android library depends on the android.system.Os.socket() method. The common library abstracts
+this method + some other native methods so that the library can be used on both Android and Linux
+JVM implementations.
+```kotlin
+implementation("com.jasonernst.icmp:icmp-android")
+```
+
+### Linux JVM
+Note the the Linux JVM implementation uses a .so file that is built using cmake. For unit tests,
+the .so file is added to the lib path for the test task. For the actual library, the .so file is
+included in the jar file. This means that the .so file will be extracted to /tmp on the filesystem
+and read from there. This is not ideal, but it is a workaround for now. What should happen, is that
+the .so is produced as a separate artifact and then included in the library as a dependency and the
+location of the .so file is added to the java.library.path. This is a future improvement.
+```kotlin
+implementation("com.jasonernst.icmp:icmp-linux")
+```
+
+## Building locally:
+If changes are made to icmp-common, you will need to publish it locally. 
+This can be done by running the `publishToMavenLocal` task in the icmp-common module.
 
 ## Todo:
 - [x] Structure into a library and an app that uses it

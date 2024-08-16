@@ -14,8 +14,16 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
+version = "0.0.0-SNAPSHOT"
+gitVersioning.apply {
+    refs {
+        branch(".+") { version = "\${ref}-SNAPSHOT" }
+        tag("v(?<version>.*)") { version = "\${ref.version}" }
+    }
+}
+
 dependencies {
-    implementation(project(":icmp-common"))
+    api("com.jasonernst.icmp:icmp_common:$version")
     testImplementation(libs.bundles.unit.test)
     testImplementation(libs.logback.classic)
 }
@@ -34,18 +42,12 @@ tasks.withType<Test>().configureEach {
         outputs.upToDateWhen {true}
     }
     useJUnitPlatform()
+    dependsOn(":icmp-linux:cmakeBuild")
+    dependsOn(":icmp-linux:jar")
 }
 
 tasks.withType<KotlinCompile>().configureEach {
     dependsOn(":icmp-linux:cmakeBuild")
-}
-
-version = "0.0.0-SNAPSHOT"
-gitVersioning.apply {
-    refs {
-        branch(".+") { version = "\${ref}-SNAPSHOT" }
-        tag("v(?<version>.*)") { version = "\${ref.version}" }
-    }
 }
 
 // see: https://github.com/vanniktech/gradle-maven-publish-plugin/issues/747#issuecomment-2066762725
@@ -62,7 +64,7 @@ nmcp {
 
 // see: https://vanniktech.github.io/gradle-maven-publish-plugin/central/#configuring-the-pom
 mavenPublishing {
-    coordinates("com.jasonernst.icmp_lib", "icmp_linux", version.toString())
+    coordinates("com.jasonernst.icmp", "icmp_linux", version.toString())
     pom {
         name = "ICMP Linux"
         description = "A library for sending and receiving ICMP packets on Linux"
@@ -90,4 +92,30 @@ mavenPublishing {
     }
 
     signAllPublications()
+}
+
+afterEvaluate {
+    getTasksByName("signSoPublication", true).forEach {
+        it.dependsOn(":icmp-linux:cmakeBuild")
+    }
+}
+
+tasks.jar {
+    from(project(":icmp-linux").layout.buildDirectory.asFile.get().absolutePath + "/cmake/libicmp.so")
+}
+
+val so: Configuration by configurations.creating {
+    isCanBeConsumed = true
+    isCanBeResolved = false
+    attributes {
+        attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category.LIBRARY))
+        attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.JAVA_RUNTIME))
+        attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL))
+        attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, JavaVersion.current().majorVersion.toInt())
+        attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named("so"))
+    }
+}
+
+artifacts {
+    add("so", file(project(":icmp-linux").layout.buildDirectory.asFile.get().absolutePath + "/cmake/libicmp.so"))
 }
