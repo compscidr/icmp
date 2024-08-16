@@ -9,7 +9,10 @@ on:
 jobs:
   build:
     name: Build and Test
-    runs-on: ubuntu-latest
+    # if you fork this repo, you should change this to ubuntu-latest
+    # you should also disable ipv6 tests, and the android tests
+    # (the self-hosted tests have ipv6 on the host and a phone attached to the runner)
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
       - name: set up JDK
@@ -25,8 +28,8 @@ jobs:
       - name: Build and Publish the Android and Linux Libraries to the local Maven repository
         run: ./gradlew :icmp-android:publishToMavenLocal :icmp-linux:publishToMavenLocal
       - name: Build with Gradle
-        run: ./gradlew assemble # we don't use build because that will run the tests, we want that separate
+        run: ./gradlew assemble          # we don't use build because that will run the tests, we want that separate
       - name: JVM Unit tests
         run: ./gradlew check
-#      - name: Android Instrumented tests # disabled until we can setup a self hosted runner
-#        run: ./gradlew connectedCheck
+      - name: Android Instrumented tests # disable if you don't have a phone attached to the runner
+        run: ./gradlew connectedCheck

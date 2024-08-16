@@ -3,6 +3,7 @@
   "extends": [
     "config:base"
   ],
+  "ignoreDeps": ["icmp_common", "icmp_android", "icmp_linux"],
   "packageRules": [
     {
       "description": "Automerge non-major updates",

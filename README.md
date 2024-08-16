@@ -11,6 +11,19 @@ JVM implementations.
 implementation("com.jasonernst.icmp:icmp-android")
 ```
 
+Using the Library:
+```kotlin
+import com.jasonernst.icmp.ICMPAndroid 
+import java.net.InetAddress
+
+// this will ping google.com with a dns resolution timeout of 500ms and an ICMP timeout of 1000ms
+ICMPAndroid.ping("google.com", 500, 1000)
+
+// this will ping the local host with a timeout of 1000ms. Note that the InetAddress object is used
+// here, and that when we do this, there is no DNS request made because we already have the IP address
+ICMPAndroid.ping(InetAddress.getLocalHost(), 1000)
+```
+
 ### Linux JVM
 Note the the Linux JVM implementation uses a .so file that is built using cmake. For unit tests,
 the .so file is added to the lib path for the test task. For the actual library, the .so file is
@@ -20,6 +33,19 @@ the .so is produced as a separate artifact and then included in the library as a
 location of the .so file is added to the java.library.path. This is a future improvement.
 ```kotlin
 implementation("com.jasonernst.icmp:icmp-linux")
+```
+
+Using the library:
+```kotlin
+import java.net.InetAddress
+import com.jasonernst.icmp.ICMPLinux
+
+// this will ping google.com with a dns resolution timeout of 500ms and an ICMP timeout of 1000ms
+ICMPLinux.ping("google.com", 500, 1000)
+
+// this will ping the local host with a timeout of 1000ms. Note that the InetAddress object is used
+// here, and that when we do this, there is no DNS request made because we already have the IP address
+ICMPLinux.ping(InetAddress.getLocalHost(), 1000)
 ```
 
 ## Building locally:
