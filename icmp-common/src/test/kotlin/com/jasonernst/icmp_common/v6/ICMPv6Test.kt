@@ -55,4 +55,17 @@ class ICMPv6Test {
         val parsedPacket = ICMPHeader.fromStream(buffer, false)
         assertEquals(icmpV6DestinationUnreachablePacket, parsedPacket)
     }
+
+    @Test
+    fun timeExceededTest() {
+        val icmPv6TimeExceededPacket = ICMPv6TimeExceededPacket(
+            checksum = 0u,
+            code = ICMPv6TimeExceededCodes.HOP_LIMIT_EXCEEDED,
+            data = byteArrayOf(0x01, 0x02, 0x03, 0x04)
+        )
+        val buffer = ByteBuffer.wrap(icmPv6TimeExceededPacket.toByteArray())
+        stringDumper.dumpBuffer(buffer, 0, buffer.limit())
+        val parsedPacket = ICMPHeader.fromStream(buffer, false)
+        assertEquals(icmPv6TimeExceededPacket, parsedPacket)
+    }
 }

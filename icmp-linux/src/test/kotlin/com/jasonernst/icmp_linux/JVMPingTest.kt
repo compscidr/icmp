@@ -51,7 +51,7 @@ class JVMPingTest {
 
     @Test fun pingTimeout() {
         // first do a ping with a normal timeout to make sure the host works
-        icmp.ping("www.gov.za")
+        icmp.ping("www.gov.za", pingTimeoutMS = 2000)
         // then do one with an aggressive timeout
         assertThrows<IOException> {
             icmp.ping("www.gov.za", pingTimeoutMS = 1)

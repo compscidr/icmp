@@ -26,6 +26,9 @@ open class ICMPv6Header(
                 ICMPv6Type.DESTINATION_UNREACHABLE -> {
                     ICMPv6DestinationUnreachablePacket.fromStream(buffer, code, checksum, order)
                 }
+                ICMPv6Type.TIME_EXCEEDED -> {
+                    ICMPv6TimeExceededPacket.fromStream(buffer, code, checksum, order)
+                }
                 else -> {
                     throw PacketHeaderException("Unsupported ICMPv6 type")
                 }

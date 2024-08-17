@@ -54,4 +54,17 @@ class ICMPv4Test {
         val parsedPacket = ICMPHeader.fromStream(buffer, true)
         assertEquals(icmpV4DestinationUnreachablePacket, parsedPacket)
     }
+
+    @Test
+    fun timeExceededTest() {
+        val icmPv4TimeExceededPacket = ICMPv4TimeExceededPacket(
+            checksum = 0u,
+            code = ICMPv4DestinationUnreachableCodes.DESTINATION_HOST_UNKNOWN,
+            data = byteArrayOf(0x01, 0x02, 0x03, 0x04)
+        )
+        val buffer = ByteBuffer.wrap(icmPv4TimeExceededPacket.toByteArray())
+        stringDumper.dumpBuffer(buffer, 0, buffer.limit())
+        val parsedPacket = ICMPHeader.fromStream(buffer, true)
+        assertEquals(icmPv4TimeExceededPacket, parsedPacket)
+    }
 }

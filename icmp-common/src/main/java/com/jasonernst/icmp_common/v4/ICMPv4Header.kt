@@ -23,6 +23,9 @@ open class ICMPv4Header(
                 ICMPv4Type.DESTINATION_UNREACHABLE -> {
                     ICMPv4DestinationUnreachablePacket.fromStream(buffer, code, checksum, order)
                 }
+                ICMPv4Type.TIME_EXCEEDED -> {
+                    ICMPv4TimeExceededPacket.fromStream(buffer, code, checksum, order)
+                }
                 else -> {
                     throw PacketHeaderException("Unsupported ICMPv4 type")
                 }
