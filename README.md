@@ -4,6 +4,22 @@
 
 A simple library to ping a host using ICMP on Android or Linux JVM.
 
+Currently, can:
+- creates a non-privileged ICMPv4 or ICMPv6 socket see: https://keith.github.io/xcode-man-pages/icmp.4.html#Non-privileged_ICMP
+- uses the android.system.Os.socket() method on Android and a JNI implementation for Linux JVM
+- separate DNS resolution timeout and ICMP timeout
+- ping a host using ICMPv4 or ICMPv6 depending on the host resolution, receive and parse the response
+- can produce and parse the following ICMP packets:
+  - echo request
+  - echo reply
+  - destination unreachable
+  - time exceeded
+
+See: https://www.rfc-editor.org/rfc/rfc792.html and https://datatracker.ietf.org/doc/html/rfc4443
+
+TODO:
+- a proper android example
+
 ## Usage
 
 ### Android
@@ -70,20 +86,6 @@ And each consumer of the library can pass the appropriate ICMP implementation.
 ## Building locally:
 If changes are made to icmp-common, you will need to publish it locally. 
 This can be done by running the `publishToMavenLocal` task in the icmp-common module.
-
-## Todo:
-- [x] Structure into a library and an app that uses it
-- [x] Release the library to maven central so it can be used
-- [ ] Implement icmp v4
-- [ ] Implement icmp v6
-- [x] Implement tests for both Ipv4 and Ipv6
-  - tests working on both JVM and Android Instrumented Tests 
-- [ ] Hookup instrumented tests in CI/CD with actual phone on self-hosted runner
-- [x] Investigate whether there is a similar function call for android.system.Os.socket() for 
-      non-Android Kotlin. This will make it possible to run tests on a non-Android JVM, ie) the unit
-      tests.
-  - Implemented an abstraction that still uses cmake / native code for the non-android JVM. This
-    also means this could be released as a cross-platform android / JVM library.
 
 ## Inspirations
 - Originally motivated by https://github.com/kirillF/icmp-android but updated since it no longer
