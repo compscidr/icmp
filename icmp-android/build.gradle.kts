@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.gradleup.nmcp)
     alias(libs.plugins.dokka)
     id("signing") // https://medium.com/nerd-for-tech/oh-no-another-publishing-android-artifacts-to-maven-central-guide-9d7f300ebd74
+    id("jacoco")
 }
 
 android {
@@ -33,6 +34,12 @@ android {
                 "proguard-rules.pro"
             )
         }
+        debug {
+            isShrinkResources = false
+            isMinifyEnabled = false
+            enableAndroidTestCoverage = true
+            enableUnitTestCoverage = true
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -41,6 +48,37 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+    tasks.withType<Test>().configureEach {
+        useJUnitPlatform()
+        configure<JacocoTaskExtension> {
+            // Required for JaCoCo + Robolectric
+            // https://github.com/robolectric/robolectric/issues/2230
+            isIncludeNoLocationClasses = true
+
+            // Required for JDK 11 with the above
+            // https://github.com/gradle/gradle/issues/5184#issuecomment-391982009
+            excludes = listOf("jdk.internal.*")
+        }
+        finalizedBy("jacocoTestReport")
+    }
+}
+
+junitPlatform {
+    // this is for the non-android unit tests, only required with the mannodermaus plugin
+    jacocoOptions {
+        html.enabled = true
+        xml.enabled = true
+        csv.enabled = false
+    }
+}
+
+tasks.withType(JacocoReport::class.java) {
+    executionData(fileTree("build/outputs/code_coverage/debugAndroidTest/connected/").include("**/*.ec"))
+    executionData(fileTree("build/outputs/unit_test_code_coverage/debugUnitTest/").include("**/*.exec"))
+}
+
+kotlin {
+    jvmToolchain(17)
 }
 
 version = "0.0.0-SNAPSHOT"

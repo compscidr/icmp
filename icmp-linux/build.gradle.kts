@@ -7,11 +7,27 @@ plugins {
     alias(libs.plugins.git.version) // https://stackoverflow.com/a/71212144
     alias(libs.plugins.sonatype.maven.central)
     alias(libs.plugins.gradleup.nmcp)
+    id("jacoco")
 }
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
+}
+
+kotlin {
+    jvmToolchain(17)
+}
+
+jacoco {
+    toolVersion = "0.8.12"
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required = true
+        html.required = false
+    }
 }
 
 version = "0.0.0-SNAPSHOT"
@@ -44,6 +60,7 @@ tasks.withType<Test>().configureEach {
     useJUnitPlatform()
     dependsOn(":icmp-linux:cmakeBuild")
     dependsOn(":icmp-linux:jar")
+    finalizedBy("jacocoTestReport")
 }
 
 tasks.withType<KotlinCompile>().configureEach {
