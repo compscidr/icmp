@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.git.version) // https://stackoverflow.com/a/71212144
     alias(libs.plugins.sonatype.maven.central)
     alias(libs.plugins.gradleup.nmcp)
+    id("jacoco")
 }
 
 java {
@@ -11,10 +12,38 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
+
+kotlin {
+    jvmToolchain(17)
+}
+
+jacoco {
+    toolVersion = "0.8.12"
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required = true
+        html.required = false
+    }
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
+    finalizedBy("jacocoTestReport")
+}
+
 dependencies {
     api(libs.packetdumper)
     api(libs.kotlinx.coroutines.core)
     api(libs.slf4j.api)
+
+    testImplementation(libs.bundles.unit.test)
+    testImplementation(libs.logback.classic)
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }
 
 version = "0.0.0-SNAPSHOT"

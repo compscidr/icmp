@@ -33,3 +33,24 @@ jobs:
         run: ./gradlew check
       - name: Android Instrumented tests # disable if you don't have a phone attached to the runner
         run: ./gradlew connectedCheck
+      - name: Upload ICMP Common Unit Tests Report to CodeCov
+        # https://github.com/codecov/codecov-action
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: commonunittests
+          files: ./icmp-common/build/reports/jacoco/test/jacocoTestReport.xml
+      - name: Upload ICMP Linux Unit Tests Report to CodeCov
+        # https://github.com/codecov/codecov-action
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: linuxunittests
+          files: ./icmp-linux/build/reports/jacoco/test/jacocoTestReport.xml
+      - name: Upload Instrumented Tests Report to CodeCov
+        # https://github.com/codecov/codecov-action
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: instrumentedtests
+          files: ./icmp-android/build/reports/coverage/androidTest/debug/connected/report.xml

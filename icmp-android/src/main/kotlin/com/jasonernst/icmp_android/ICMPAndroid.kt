@@ -27,7 +27,8 @@ object ICMPAndroid: ICMP() {
 
 
     override fun setsockoptInt(fd: FileDescriptor, level: Int, optname: Int, optval: Int): Int {
-        return setsockoptInt(fd, level, optname, optval)
+        Os.setsockoptInt(fd, level, optname, optval)
+        return 0
     }
 
     override fun setsocketRecvTimeout(fd: FileDescriptor, timeoutMS: Long) {
