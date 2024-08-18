@@ -52,7 +52,7 @@ unit-test = ["junit-jupiter-api", "junit-jupiter"]
 android-application = { id = "com.android.application", version.ref = "agp" }
 org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
-git-version = { id = "me.qoomon.git-versioning", version = "6.4.3" }
+git-version = { id = "me.qoomon.git-versioning", version = "6.4.4" }
 sonatype-maven-central = { id = "com.vanniktech.maven.publish", version = "0.29.0" }
 gradleup-nmcp = { id = "com.gradleup.nmcp", version = "0.0.9"}
 de-mannodermaus-android-junit5 = { id = "de.mannodermaus.android-junit5", version.ref = "mannodermaus_junit5_plugin" }
