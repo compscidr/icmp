@@ -38,6 +38,10 @@ class ICMPv6TimeExceededPacket(code: ICMPv6TimeExceededCodes, checksum: UShort =
         }
     }
 
+    override fun size(): Int {
+        return ICMP_HEADER_MIN_LENGTH.toInt() + data.size
+    }
+
     override fun toString(): String {
         return "ICMPv6TimeExceededPacket(code=$code, checksum=$checksum, data=${data.contentToString()})"
     }

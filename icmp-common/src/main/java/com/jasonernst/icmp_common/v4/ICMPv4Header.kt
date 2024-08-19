@@ -9,7 +9,7 @@ import java.nio.ByteOrder
  * Implementation of ICMP header:
  * https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol
  */
-open class ICMPv4Header(
+abstract class ICMPv4Header(
     icmpV4Type: ICMPv4Type,
     code: UByte,
     checksum: UShort,

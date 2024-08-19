@@ -70,6 +70,10 @@ class ICMPv4EchoPacket(
         }
     }
 
+    override fun size(): Int {
+        return ICMP_HEADER_MIN_LENGTH.toInt() + ICMP_ECHO_MIN_LENGTH + data.size
+    }
+
     override fun toString(): String {
         return "ICMPv4EchoPacket(checksum=$checksum, id=$id, sequence=$sequence, isReply=$isReply, data=${data.contentToString()})"
     }

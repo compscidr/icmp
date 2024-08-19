@@ -3,6 +3,10 @@ import com.jasonernst.icmp_common.v4.ICMPv4EchoPacket
 import com.jasonernst.icmp_common.v6.ICMPv6EchoPacket
 import com.jasonernst.packetdumper.stringdumper.StringPacketDumper
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
@@ -27,11 +31,20 @@ abstract class ICMP {
     }
     abstract fun obtainSocketIpv4Socket(): FileDescriptor
     abstract fun obtainSocketIpv6Socket(): FileDescriptor
-    //abstract fun setsocketlowDelay(fd: FileDescriptor)
     abstract fun setsockoptInt(fd: FileDescriptor, level: Int, optname: Int, optval: Int): Int
     abstract fun setsocketRecvTimeout(fd: FileDescriptor, timeoutMS: Long)
     abstract fun sendto(fd: FileDescriptor, buffer: ByteBuffer, flags: Int, address: InetAddress, port: Int): Int
     abstract fun recvfrom(fd: FileDescriptor, buffer: ByteBuffer, flags: Int, address: InetAddress, port: Int): Int
+
+    private fun resolveInetAddressWithTimeout(host: String, timeoutMS: Long = 1000): InetAddress {
+        return runBlocking {
+            return@runBlocking withTimeout(timeoutMS) {
+                withContext(Dispatchers.IO) {
+                    InetAddress.getByName(host)
+                }
+            }
+        }
+    }
 
     /**
      * Pings a hostname - which could be an IP address or a domain name. There are two separate
@@ -40,51 +53,65 @@ abstract class ICMP {
      *
      * Note: it looks like on both Android and Linux, the ID is set by the OS. We can however,
      * control the sequence number and use it to match on the recv side.
+     *
+     * To avoid resolving the same host multiple times, after the first resolve, the InetAddress is
+     * returned and can be passed to the other ping function.
      */
-    fun ping(host: String, resolveTimeoutMS: Long = 1000, pingTimeoutMS: Long = 1000, id: UShort = 0u, sequence: UShort = 0u, data: ByteArray = ByteArray(0)) {
-        runBlocking {
-            val inetAddress: InetAddress = withTimeout(resolveTimeoutMS) {
-                withContext(Dispatchers.IO) {
-                    InetAddress.getByName(host)
-                }
-            }
-            logger.debug("Resolved $host to ${inetAddress.hostAddress}")
-            ping(inetAddress, pingTimeoutMS, id, sequence)
-        }
+    suspend fun ping(host: String, resolveTimeoutMS: Long = 1000, pingTimeoutMS: Long = 1000, id: UShort = 0u, sequence: UShort = 0u, data: ByteArray = ByteArray(0)): PingResult {
+        val inetAddress = resolveInetAddressWithTimeout(host, resolveTimeoutMS)
+        logger.debug("Resolved $host to ${inetAddress.hostAddress}")
+        return ping(inetAddress, pingTimeoutMS, id, sequence, data)
     }
 
     /**
      * Pings an InetAddress (Ipv4 or Ipv6) with a timeout. This is a blocking function that will
      * return when either a response has been received or the timeout has been reached.
      */
-    fun ping(inetAddress: InetAddress, timeoutMS: Long = 1000, id: UShort, sequence: UShort, data: ByteArray = ByteArray(0)) {
-        val fd = if (inetAddress is Inet4Address) {
-            logger.debug("ping4 to ${inetAddress.hostAddress}")
-            obtainSocketIpv4Socket()
-        } else {
-            logger.debug("ping6 to ${inetAddress.hostAddress}")
-            obtainSocketIpv6Socket()
-        }
+    suspend fun ping(inetAddress: InetAddress, timeoutMS: Long = 1000, id: UShort, sequence: UShort, data: ByteArray = ByteArray(0)): PingResult {
+        val fd = openAndPrepareSocket(inetAddress, timeoutMS)
+        val result = ping(fd, inetAddress, id, sequence, data)
 
-        // can only call this function on android O and higher
-        // not sure if these actually do much of anything, but putting them in anyway
-        try {
-            if (inetAddress is Inet4Address) {
-                // https://datatracker.ietf.org/doc/html/rfc791 page 12,
-                // setting bit3 to 1 means low delay
-                setsockoptInt(fd, IPPROTO_IP, IP_TOS, 0b10000)
+        // todo: close the socket
+        return result
+    }
+
+    suspend fun openAndPrepareSocket(inetAddress: InetAddress, timeoutMS: Long = 1000): FileDescriptor {
+        return withContext(Dispatchers.IO) {
+            val fd = if (inetAddress is Inet4Address) {
+                logger.debug("ping4 to ${inetAddress.hostAddress}")
+                obtainSocketIpv4Socket()
             } else {
-                // https://en.wikipedia.org/wiki/Differentiated_services#Expedited_Forwarding
-                setsockoptInt(fd, IPPROTO_IPV6, IPV6_TCLASS, 0b101110)
+                logger.debug("ping6 to ${inetAddress.hostAddress}")
+                obtainSocketIpv6Socket()
             }
-        } catch (e: Exception) {
-            logger.error("Failed to set socket into low delay mode: ${e.message}")
+
+            // can only call this function on android O and higher
+            // not sure if these actually do much of anything, but putting them in anyway
+            try {
+                if (inetAddress is Inet4Address) {
+                    // https://datatracker.ietf.org/doc/html/rfc791 page 12,
+                    // setting bit3 to 1 means low delay
+                    setsockoptInt(fd, IPPROTO_IP, IP_TOS, 0b10000)
+                } else {
+                    // https://en.wikipedia.org/wiki/Differentiated_services#Expedited_Forwarding
+                    setsockoptInt(fd, IPPROTO_IPV6, IPV6_TCLASS, 0b101110)
+                }
+            } catch (e: Exception) {
+                logger.error("Failed to set socket into low delay mode: ${e.message}")
+            }
+
+            // can only call on android Q and higher
+            setsocketRecvTimeout(fd, timeoutMS)
+            return@withContext fd
         }
+    }
 
-        // can only call on android Q and higher
-        setsocketRecvTimeout(fd, timeoutMS)
-
-        // todo: construct an ICMP packet
+    /**
+     * Pings a file descriptor which has already previously been prepared (sockopts already set)
+     * Useful for sessions where we don't want to re-open the socket each time (and cause a new id
+     * to be generated by the OS).
+     */
+    fun ping(fd: FileDescriptor, inetAddress: InetAddress, id: UShort, sequence: UShort, data: ByteArray = ByteArray(0)): PingResult {
         // https://man7.org/linux/man-pages/man2/sendto.2.html
         // this will return -1 on error and errno set
         val icmpHeader = if (inetAddress is Inet4Address) {
@@ -96,6 +123,7 @@ abstract class ICMP {
         val bytesToSend = ByteBuffer.wrap(icmpHeader.toByteArray())
         val stringDumper = StringPacketDumper()
         logger.debug("bytesToSend: ${icmpHeader.toByteArray().size}\n${stringDumper.dumpBufferToString(bytesToSend, 0 , bytesToSend.limit())}")
+        val sendTimeMs = System.currentTimeMillis()
         val bytesSent = sendto(fd, bytesToSend, 0, inetAddress, ICMP_PORT)
         logger.debug("bytesSent: $bytesSent")
 
@@ -104,23 +132,70 @@ abstract class ICMP {
         // someone else can't send us a response and confuse the result
         // https://man7.org/linux/man-pages/man2/recvfrom.2.html
         // this will return 0 when the socket is EOF and -1 on error with errno set
-        val bytesRecieved = recvfrom(fd, recvBuffer, 0, inetAddress, ICMP_PORT)
-        recvBuffer.limit(bytesRecieved)
-        logger.debug("bytesRecieved: $bytesRecieved\n${stringDumper.dumpBufferToString(recvBuffer, 0, bytesRecieved)}")
+        try {
+            val bytesRecieved = recvfrom(fd, recvBuffer, 0, inetAddress, ICMP_PORT)
+            val responseTimeMs = System.currentTimeMillis() - sendTimeMs
+            recvBuffer.limit(bytesRecieved)
+            logger.debug("bytesRecieved: $bytesRecieved\n${stringDumper.dumpBufferToString(recvBuffer, 0, bytesRecieved)}")
 
-        recvBuffer.position(0) // bug in the string dumping code
-        val response = ICMPHeader.fromStream(recvBuffer, inetAddress is Inet4Address)
-        logger.debug("response: $response")
-        if (response is ICMPv4EchoPacket) {
-            if (response.sequence != sequence) {
-                throw Exception("Sequence number mismatch")
+            recvBuffer.position(0) // bug in the string dumping code
+            val response = ICMPHeader.fromStream(recvBuffer, inetAddress is Inet4Address)
+            logger.debug("response: $response")
+            if (response is ICMPv4EchoPacket) {
+                if (response.sequence != sequence) {
+                    return PingResult.Failed("Sequence number mismatch")
+                }
+            } else if (response is ICMPv6EchoPacket) {
+                if (response.sequence != sequence) {
+                    return PingResult.Failed("Sequence number mismatch")
+                }
+            } else {
+                return PingResult.Failed("Unknown ICMP response type")
             }
-        } else if (response is ICMPv6EchoPacket) {
-            if (response.sequence != sequence) {
-                throw Exception("Sequence number mismatch")
+            return PingResult.Success(sequence.toInt(), response.size(), responseTimeMs, inetAddress)
+        } catch (e: Exception) {
+            return PingResult.Failed(e.message ?: "Failed to ping ${inetAddress.hostAddress}")
+        }
+    }
+
+    /**
+     * Pings an InetAddress (Ipv4 or Ipv6) repeatedly until count, or indefinitely if count is null.
+     */
+    suspend fun ping(inetAddress: InetAddress, timeoutMS: Long = 1000, intervalMS: Long = 1000, id: UShort, startingSequence: UShort, data: ByteArray = ByteArray(0), count: Int? = null): Flow<PingResult> {
+        val fd = openAndPrepareSocket(inetAddress, timeoutMS)
+
+        return callbackFlow {
+            var sequence = startingSequence
+            var packetsTransmitted = 0
+            while (count == null || packetsTransmitted < count) {
+                val result = ping(fd, inetAddress, id, sequence, data)
+                sequence++
+                packetsTransmitted++
+                send(result)
+                if (result is PingResult.Success) {
+                    kotlinx.coroutines.delay(intervalMS - result.ms)
+                } else {
+                    kotlinx.coroutines.delay(intervalMS)
+                }
             }
-        } else {
-            throw Exception("Unknown ICMP response type")
+            cancel(message = "Sent $packetsTransmitted packets")
+        }.flowOn(Dispatchers.IO)
+    }
+
+    /**
+     * Pings a hostname - which could be an IP address or a domain name repeatedly until count, or
+     * indefinitely if count is null.
+     */
+    suspend fun ping(host: String, resolveTimeoutMS: Long = 1000, pingTimeoutMS: Long = 1000, intervalMS: Long = 1000,  id: UShort = 0u, startingSequence: UShort = 0u, data: ByteArray = ByteArray(0), count: Int? = null): Flow<PingResult> {
+        try {
+            val inetAddress = resolveInetAddressWithTimeout(host, resolveTimeoutMS)
+            logger.debug("Resolved $host to ${inetAddress.hostAddress}")
+            return ping(inetAddress, pingTimeoutMS, intervalMS, id, startingSequence, data, count)
+        } catch (e: Exception) {
+            return callbackFlow {
+                send(PingResult.Failed(e.message ?: "Failed to resolve $host"))
+                cancel(message = "Failed to resolve $host")
+            }.flowOn(Dispatchers.IO)
         }
     }
 }

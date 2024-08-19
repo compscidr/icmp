@@ -45,6 +45,10 @@ class ICMPv6EchoPacket(
         }
     }
 
+    override fun size(): Int {
+        return ICMP_HEADER_MIN_LENGTH.toInt() + ICMP_ECHO_LENGTH + data.size
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

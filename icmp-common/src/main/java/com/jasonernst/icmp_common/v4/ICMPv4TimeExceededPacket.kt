@@ -37,6 +37,10 @@ class ICMPv4TimeExceededPacket(code: ICMPv4DestinationUnreachableCodes, checksum
         }
     }
 
+    override fun size(): Int {
+        return ICMP_HEADER_MIN_LENGTH.toInt() + data.size
+    }
+
     override fun toString(): String {
         return "ICMPv4TimeExceededPacket(code=$code, checksum=$checksum, data=${data.contentToString()})"
     }
