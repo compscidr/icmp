@@ -23,6 +23,13 @@ android {
         targetSdk = 34
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+    packaging {
+        resources {
+            excludes.add("/META-INF/{AL2.0,LGPL2.1}")
+            excludes.add("/META-INF/INDEX.LIST")
+            excludes.add("/META-INF/LICENSE.md")
+        }
+    }
     buildFeatures {
         compose = true
     }
