@@ -1,7 +1,10 @@
 package com.jasonernst.icmp_android
 
 import android.system.ErrnoException
+import com.jasonernst.icmp_common.PingResult
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.slf4j.LoggerFactory
@@ -28,47 +31,63 @@ class AndroidPingTest {
 
     @Test
     fun pingIpv4Localhost() {
-        icmp.ping("localhost")
+        runBlocking {
+            icmp.ping("localhost")
+        }
     }
 
     @Test fun pingIpv6Localhost() {
-        icmp.ping("::1")
+        runBlocking {
+            icmp.ping("::1")
+        }
     }
 
     @Test
     fun pingReachableIpv4() {
-        icmp.ping(REACHABLE_IPv4)
+        runBlocking {
+            icmp.ping(REACHABLE_IPv4)
+        }
     }
 
     @Test fun pingUnreachableIpv4() {
-        assertThrows<ErrnoException> {
-            icmp.ping(UNREACHABLE_IPv4)
+        runBlocking {
+            val result = icmp.ping(UNREACHABLE_IPv4)
+            assertTrue(result is PingResult.Failed)
         }
     }
 
     @Test fun pingUnknownHost() {
-        assertThrows<UnknownHostException> {
-            icmp.ping("dfadfasdf.com")
+        runBlocking {
+            assertThrows<UnknownHostException> {
+                icmp.ping("dfadfasdf.com")
+            }
         }
     }
 
     @Test fun pingTimeout() {
-        // first do a ping with a normal timeout to make sure the host works
-        icmp.ping("8.8.8.8")
-        // then do one with an aggressive timeout
-        assertThrows<ErrnoException> {
-            icmp.ping("8.8.8.8", pingTimeoutMS = 1)
+        runBlocking {
+            // first do a ping with a normal timeout to make sure the host works
+            var result = icmp.ping("8.8.8.8")
+            assertTrue(result is PingResult.Success)
+
+            // then do one with an aggressive timeout
+            result = icmp.ping("8.8.8.8", pingTimeoutMS = 1)
+            assertTrue(result is PingResult.Failed)
         }
     }
 
     @Test fun pingDnsTimeout() {
-        assertThrows<TimeoutCancellationException> {
-            // do a resolution to a host we haven't used yet so we don't get a cache hit
-            icmp.ping("jasonernst.com", resolveTimeoutMS = 1)
+        runBlocking {
+            assertThrows<TimeoutCancellationException> {
+                // do a resolution to a host we haven't used yet so we don't get a cache hit
+                icmp.ping("jasonernst.com", resolveTimeoutMS = 1)
+            }
         }
     }
 
     @Test fun pingWithIdAndSequence() {
-        icmp.ping(InetAddress.getLoopbackAddress(), id = 0x1234u, sequence = 0x5678u)
+        runBlocking {
+            icmp.ping(InetAddress.getLoopbackAddress(), id = 0x1234u, sequence = 0x5678u)
+        }
     }
 }
