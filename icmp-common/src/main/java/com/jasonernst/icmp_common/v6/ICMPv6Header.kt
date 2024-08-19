@@ -12,7 +12,7 @@ import java.nio.ByteOrder
  *
  * https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol
  */
-open class ICMPv6Header(
+abstract class ICMPv6Header(
     icmPv6Type: ICMPv6Type,
     code: UByte,
     checksum: UShort

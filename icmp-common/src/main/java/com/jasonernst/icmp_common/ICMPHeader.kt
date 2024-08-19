@@ -46,4 +46,6 @@ abstract class ICMPHeader(val type: ICMPType, val code: UByte, val checksum: USh
         buffer.putShort(checksum.toShort())
         return buffer.array()
     }
+
+    abstract fun size(): Int
 }

@@ -14,7 +14,7 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "icmp"
-include(":example")
+include(":example-android")
 include(":icmp-android")
 include(":icmp-common")
 include(":icmp-linux")

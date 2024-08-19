@@ -46,6 +46,10 @@ class ICMPv4DestinationUnreachablePacket(code: ICMPv4DestinationUnreachableCodes
         }
     }
 
+    override fun size(): Int {
+        return ICMP_HEADER_MIN_LENGTH.toInt() + data.size
+    }
+
     override fun toString(): String {
         return "ICMPv4DestinationUnreachablePacket(code=$code, checksum=$checksum, data=${data.contentToString()})"
     }

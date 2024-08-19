@@ -1,0 +1,4 @@
+<resources>
+    <style name="ICMPAndroid" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    </style>
+</resources>
