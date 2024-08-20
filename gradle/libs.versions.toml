@@ -15,6 +15,7 @@ logback-classic = "1.5.7"
 mannodermaus_junit5_plugin = "1.11.0.0"
 mannodermaus_junit5 = "1.5.0"
 material = "1.12.0"
+mockk = "1.12.0"
 slf4jApi = "2.0.16"
 
 [libraries]
@@ -35,6 +36,7 @@ junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.re
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCore" }
 logback-android = { module = "com.github.tony19:logback-android", version.ref = "logback-android" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback-classic" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4jApi" }
 packetdumper = { module = "com.jasonernst.packetdumper:packetdumper", version = "0.0.5" }
@@ -43,7 +45,7 @@ packetdumper = { module = "com.jasonernst.packetdumper:packetdumper", version = 
 android-test = ["junit-jupiter-api", "androidx_test_runner", "androidx_test_monitor", "androidx_test_uiautomator", "de-manodermaus-android-junit5"]
 androidx-lifecycle = ["androidx_lifecycle_viewmodel_ktx", "androidx_lifecycle_viewmodel_compose", "androidx_lifecycle_runtime_compose"]
 compose = ["compose-activity", "compose-ui", "compose-material3" ]
-unit-test = ["junit-jupiter-api", "junit-jupiter"]
+unit-test = ["junit-jupiter-api", "junit-jupiter", "mockk"]
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
