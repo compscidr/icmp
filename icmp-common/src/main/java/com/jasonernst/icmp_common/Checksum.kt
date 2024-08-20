@@ -7,7 +7,6 @@ import java.nio.ByteBuffer
 object Checksum {
     private val logger = LoggerFactory.getLogger(javaClass)
 
-
     /**
      * Given the byte buffer, performs a 16-bit one's of the one's complement sum of the bytes.
      *
