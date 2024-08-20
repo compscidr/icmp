@@ -36,7 +36,10 @@ abstract class ICMP {
     abstract fun sendto(fd: FileDescriptor, buffer: ByteBuffer, flags: Int, address: InetAddress, port: Int): Int
     abstract fun recvfrom(fd: FileDescriptor, buffer: ByteBuffer, flags: Int, address: InetAddress, port: Int): Int
 
-    private fun resolveInetAddressWithTimeout(host: String, timeoutMS: Long = 1000): InetAddress {
+    /**
+     * Protected so we can mock it in tests. Performs DNS resolution with a timeout.
+     */
+    protected fun resolveInetAddressWithTimeout(host: String, timeoutMS: Long = 1000): InetAddress {
         return runBlocking {
             return@runBlocking withTimeout(timeoutMS) {
                 withContext(Dispatchers.IO) {
@@ -67,7 +70,7 @@ abstract class ICMP {
      * Pings an InetAddress (Ipv4 or Ipv6) with a timeout. This is a blocking function that will
      * return when either a response has been received or the timeout has been reached.
      */
-    suspend fun ping(inetAddress: InetAddress, timeoutMS: Long = 1000, id: UShort, sequence: UShort, data: ByteArray = ByteArray(0)): PingResult {
+    suspend fun ping(inetAddress: InetAddress, timeoutMS: Long = 1000, id: UShort = 0u, sequence: UShort = 0u, data: ByteArray = ByteArray(0)): PingResult {
         val fd = openAndPrepareSocket(inetAddress, timeoutMS)
         val result = ping(fd, inetAddress, id, sequence, data)
 
@@ -161,7 +164,7 @@ abstract class ICMP {
     /**
      * Pings an InetAddress (Ipv4 or Ipv6) repeatedly until count, or indefinitely if count is null.
      */
-    suspend fun ping(inetAddress: InetAddress, timeoutMS: Long = 1000, intervalMS: Long = 1000, id: UShort, startingSequence: UShort, data: ByteArray = ByteArray(0), count: Int? = null): Flow<PingResult> {
+    suspend fun ping(inetAddress: InetAddress, timeoutMS: Long = 1000, intervalMS: Long = 1000, id: UShort = 0u, startingSequence: UShort = 0u, data: ByteArray = ByteArray(0), count: Int? = null): Flow<PingResult> {
         val fd = openAndPrepareSocket(inetAddress, timeoutMS)
 
         return callbackFlow {
@@ -187,15 +190,15 @@ abstract class ICMP {
      * indefinitely if count is null.
      */
     suspend fun ping(host: String, resolveTimeoutMS: Long = 1000, pingTimeoutMS: Long = 1000, intervalMS: Long = 1000,  id: UShort = 0u, startingSequence: UShort = 0u, data: ByteArray = ByteArray(0), count: Int? = null): Flow<PingResult> {
-        try {
-            val inetAddress = resolveInetAddressWithTimeout(host, resolveTimeoutMS)
-            logger.debug("Resolved $host to ${inetAddress.hostAddress}")
-            return ping(inetAddress, pingTimeoutMS, intervalMS, id, startingSequence, data, count)
+        val inetAddress = try {
+            resolveInetAddressWithTimeout(host, resolveTimeoutMS)
         } catch (e: Exception) {
             return callbackFlow {
                 send(PingResult.Failed(e.message ?: "Failed to resolve $host"))
                 cancel(message = "Failed to resolve $host")
             }.flowOn(Dispatchers.IO)
         }
+        logger.debug("Resolved $host to ${inetAddress.hostAddress}")
+        return ping(inetAddress, pingTimeoutMS, intervalMS, id, startingSequence, data, count)
     }
 }
