@@ -68,4 +68,41 @@ class ICMPv6Test {
         val parsedPacket = ICMPHeader.fromStream(buffer, false)
         assertEquals(icmPv6TimeExceededPacket, parsedPacket)
     }
+
+    @Test
+    fun multicastListenerDiscoveryV2Test() {
+        val icmpV6MulticastListenerDiscoveryV2 = ICMPv6MulticastListenerDiscoveryV2(data = byteArrayOf(0x01, 0x02, 0x03, 0x04))
+        val buffer = ByteBuffer.wrap(icmpV6MulticastListenerDiscoveryV2.toByteArray())
+        stringDumper.dumpBuffer(buffer, 0, buffer.limit())
+        val parsedPacket = ICMPHeader.fromStream(buffer, false)
+        assertEquals(icmpV6MulticastListenerDiscoveryV2, parsedPacket)
+    }
+
+    @Test
+    fun routerAdvertisementTest() {
+        val icmpV6RouterAdvertisement = ICMPv6RouterAdvertisementPacket(
+            curHopLimit = 64u,
+            M = true,
+            O = false,
+            routerLifetime = 1800u,
+            reachableTime = 0u,
+            retransTimer = 9u,
+            options = byteArrayOf(0x01, 0x02, 0x03, 0x04)
+        )
+        val buffer = ByteBuffer.wrap(icmpV6RouterAdvertisement.toByteArray())
+        stringDumper.dumpBuffer(buffer, 0, buffer.limit())
+        val parsedPacket = ICMPHeader.fromStream(buffer, false)
+        assertEquals(icmpV6RouterAdvertisement, parsedPacket)
+    }
+
+    @Test
+    fun routerSolicitationTest() {
+        val icmpV6RouterSolicitation = ICMPv6RouterSolicitationPacket(
+            data = byteArrayOf(0x01, 0x02, 0x03, 0x04)
+        )
+        val buffer = ByteBuffer.wrap(icmpV6RouterSolicitation.toByteArray())
+        stringDumper.dumpBuffer(buffer, 0, buffer.limit())
+        val parsedPacket = ICMPHeader.fromStream(buffer, false)
+        assertEquals(icmpV6RouterSolicitation, parsedPacket)
+    }
 }

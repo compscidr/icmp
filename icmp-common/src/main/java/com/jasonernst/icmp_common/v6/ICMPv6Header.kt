@@ -29,6 +29,15 @@ abstract class ICMPv6Header(
                 ICMPv6Type.TIME_EXCEEDED -> {
                     ICMPv6TimeExceededPacket.fromStream(buffer, code, checksum, order)
                 }
+                ICMPv6Type.MULTICAST_LISTENER_DISCOVERY_V2 -> {
+                    ICMPv6MulticastListenerDiscoveryV2.fromStream(buffer, checksum, order)
+                }
+                ICMPv6Type.ROUTER_SOLICITATION_V6 -> {
+                    ICMPv6RouterSolicitationPacket.fromStream(buffer, order)
+                }
+                ICMPv6Type.ROUTER_ADVERTISEMENT_V6 -> {
+                    ICMPv6RouterAdvertisementPacket.fromStream(buffer, checksum, order)
+                }
                 else -> {
                     throw PacketHeaderException("Unsupported ICMPv6 type")
                 }
