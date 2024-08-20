@@ -5,6 +5,7 @@ import com.jasonernst.packetdumper.stringdumper.StringPacketDumper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
+import java.net.InetAddress
 import java.nio.ByteBuffer
 
 class ICMPv6Test {
@@ -104,5 +105,26 @@ class ICMPv6Test {
         stringDumper.dumpBuffer(buffer, 0, buffer.limit())
         val parsedPacket = ICMPHeader.fromStream(buffer, false)
         assertEquals(icmpV6RouterSolicitation, parsedPacket)
+    }
+
+    @Test
+    fun checksumTest() {
+        val icmpV6EchoPacket = ICMPv6EchoPacket(
+            checksum = 0u,
+            sequence = 5u,
+            id = 3u,
+            isReply = false,
+            data = byteArrayOf(0x01, 0x02, 0x03, 0x04)
+        )
+        val source = InetAddress.getLocalHost()
+        val checksum = icmpV6EchoPacket.computeChecksum(source, source)\
+        val icmPv6EchoPacket2 = ICMPv6EchoPacket(
+            checksum = checksum,
+            sequence = 5u,
+            id = 3u,
+            isReply = false,
+            data = byteArrayOf(0x01, 0x02, 0x03, 0x04)
+        )
+        assertEquals(0u.toUShort(), icmPv6EchoPacket2.computeChecksum(source, source, true))
     }
 }
