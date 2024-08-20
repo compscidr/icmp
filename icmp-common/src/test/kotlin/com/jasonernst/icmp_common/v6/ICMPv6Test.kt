@@ -117,7 +117,7 @@ class ICMPv6Test {
             data = byteArrayOf(0x01, 0x02, 0x03, 0x04)
         )
         val source = InetAddress.getLocalHost()
-        val checksum = icmpV6EchoPacket.computeChecksum(source, source)\
+        val checksum = icmpV6EchoPacket.computeChecksum(source, source)
         val icmPv6EchoPacket2 = ICMPv6EchoPacket(
             checksum = checksum,
             sequence = 5u,
