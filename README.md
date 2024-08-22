@@ -17,9 +17,6 @@ Currently, can:
 
 See: https://www.rfc-editor.org/rfc/rfc792.html and https://datatracker.ietf.org/doc/html/rfc4443
 
-TODO:
-- a proper android example
-
 ## Usage
 
 ### Android
