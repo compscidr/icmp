@@ -2,13 +2,14 @@ package com.jasonernst.icmp_common.v6
 
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.min
 
 class ICMPv6TimeExceededPacket(code: ICMPv6TimeExceededCodes, checksum: UShort = 0u, val data: ByteArray = ByteArray(0)): ICMPv6Header(
     ICMPv6Type.TIME_EXCEEDED, code.value, checksum) {
     companion object {
-        fun fromStream(buffer: ByteBuffer, code: UByte, checksum: UShort, order: ByteOrder = ByteOrder.BIG_ENDIAN): ICMPv6TimeExceededPacket {
+        fun fromStream(buffer: ByteBuffer, limit: Int = buffer.remaining(), code: UByte, checksum: UShort, order: ByteOrder = ByteOrder.BIG_ENDIAN): ICMPv6TimeExceededPacket {
             buffer.order(order)
-            val remainingBuffer = ByteArray(buffer.remaining())
+            val remainingBuffer = ByteArray(min(buffer.remaining(), limit- ICMP_HEADER_MIN_LENGTH.toInt()))
             buffer.get(remainingBuffer)
             return ICMPv6TimeExceededPacket(ICMPv6TimeExceededCodes.fromValue(code), checksum, data = remainingBuffer)
         }

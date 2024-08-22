@@ -3,6 +3,7 @@ package com.jasonernst.icmp_common.v4
 import com.jasonernst.icmp_common.PacketHeaderException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.min
 
 /**
  * Minimal implementation of an ICMPv4 Echo Request/Reply packet.
@@ -22,14 +23,14 @@ class ICMPv4EchoPacket(
         private const val ICMP_ECHO_MIN_LENGTH = 4 // 2 bytes for sequence, 2 bytes for id
 
         fun fromStream(
-            buffer: ByteBuffer, icmpV4Type: ICMPv4Type, checksum: UShort, order: ByteOrder = ByteOrder.BIG_ENDIAN
+            buffer: ByteBuffer, limit: Int = buffer.remaining(), icmpV4Type: ICMPv4Type, checksum: UShort, order: ByteOrder = ByteOrder.BIG_ENDIAN
         ): ICMPv4EchoPacket {
             buffer.order(order)
             val isReply: Boolean = icmpV4Type == ICMPv4Type.ECHO_REPLY
             if (buffer.remaining() < ICMP_ECHO_MIN_LENGTH) throw PacketHeaderException("Buffer too small")
             val id = buffer.short.toUShort()
             val sequence = buffer.short.toUShort()
-            val remainingBuffer = ByteArray(buffer.remaining())
+            val remainingBuffer = ByteArray(min(buffer.remaining(), limit - ICMP_ECHO_MIN_LENGTH))
             buffer.get(remainingBuffer)
             return ICMPv4EchoPacket(checksum, id, sequence, isReply, remainingBuffer)
         }

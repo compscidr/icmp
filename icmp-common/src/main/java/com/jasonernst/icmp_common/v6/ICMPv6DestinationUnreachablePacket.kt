@@ -2,6 +2,7 @@ package com.jasonernst.icmp_common.v6
 
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.min
 
 /**
  * https://www.rfc-editor.org/rfc/rfc792.html pg 4
@@ -14,9 +15,9 @@ class ICMPv6DestinationUnreachablePacket(code: ICMPv6DestinationUnreachableCodes
                                          checksum: UShort = 0u,
                                          val data: ByteArray = ByteArray(0)): ICMPv6Header(ICMPv6Type.DESTINATION_UNREACHABLE, code.value, checksum) {
     companion object {
-        fun fromStream(buffer: ByteBuffer, code: UByte, checksum: UShort, order: ByteOrder = ByteOrder.BIG_ENDIAN): ICMPv6DestinationUnreachablePacket {
+        fun fromStream(buffer: ByteBuffer, limit: Int = buffer.remaining(), code: UByte, checksum: UShort, order: ByteOrder = ByteOrder.BIG_ENDIAN): ICMPv6DestinationUnreachablePacket {
             buffer.order(order)
-            val remainingBuffer = ByteArray(buffer.remaining())
+            val remainingBuffer = ByteArray(min(buffer.remaining(), limit - ICMP_HEADER_MIN_LENGTH.toInt()))
             buffer.get(remainingBuffer)
             return ICMPv6DestinationUnreachablePacket(ICMPv6DestinationUnreachableCodes.fromValue(code), checksum, data = remainingBuffer)
         }

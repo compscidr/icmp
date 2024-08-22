@@ -3,6 +3,7 @@ package com.jasonernst.icmp_common.v6
 import com.jasonernst.icmp_common.PacketHeaderException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.min
 
 /**
  * https://datatracker.ietf.org/doc/html/rfc4443
@@ -19,6 +20,7 @@ class ICMPv6EchoPacket(
 
         fun fromStream(
             buffer: ByteBuffer,
+            limit: Int = buffer.remaining(),
             icmpV6Type: ICMPv6Type,
             checksum: UShort,
             order: ByteOrder = ByteOrder.BIG_ENDIAN
@@ -28,7 +30,7 @@ class ICMPv6EchoPacket(
             if (buffer.remaining() < ICMP_ECHO_LENGTH) throw PacketHeaderException("Buffer too small")
             val id = buffer.short.toUShort()
             val sequence = buffer.short.toUShort()
-            val remainingBuffer = ByteArray(buffer.remaining())
+            val remainingBuffer = ByteArray(min(buffer.remaining(), limit - ICMP_HEADER_MIN_LENGTH.toInt() + ICMP_ECHO_LENGTH))
             buffer.get(remainingBuffer)
             return ICMPv6EchoPacket(checksum, id, sequence, isReply, remainingBuffer)
         }

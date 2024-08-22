@@ -2,12 +2,13 @@ package com.jasonernst.icmp_common.v4
 
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.min
 
 class ICMPv4TimeExceededPacket(code: ICMPv4DestinationUnreachableCodes, checksum: UShort = 0u, val data: ByteArray = ByteArray(0)): ICMPv4Header(ICMPv4Type.TIME_EXCEEDED, code.value, checksum) {
     companion object {
-        fun fromStream(buffer: ByteBuffer, code: UByte, checksum: UShort, order: ByteOrder = ByteOrder.BIG_ENDIAN): ICMPv4TimeExceededPacket {
+        fun fromStream(buffer: ByteBuffer, limit: Int = buffer.remaining(), code: UByte, checksum: UShort, order: ByteOrder = ByteOrder.BIG_ENDIAN): ICMPv4TimeExceededPacket {
             buffer.order(order)
-            val remainingBuffer = ByteArray(buffer.remaining())
+            val remainingBuffer = ByteArray(min(buffer.remaining(), limit - ICMP_HEADER_MIN_LENGTH.toInt()))
             buffer.get(remainingBuffer)
             return ICMPv4TimeExceededPacket(ICMPv4TimeExceededCodes.fromValue(code), checksum, data = remainingBuffer)
         }
