@@ -15,16 +15,16 @@ abstract class ICMPv4Header(
     checksum: UShort,
 ) : ICMPHeader(type = icmpV4Type, code = code, checksum = checksum) {
     companion object {
-        fun fromStream(buffer: ByteBuffer, icmpV4Type: ICMPv4Type, code: UByte, checksum: UShort, order: ByteOrder = ByteOrder.BIG_ENDIAN): ICMPv4Header {
+        fun fromStream(buffer: ByteBuffer, limit: Int = buffer.remaining(), icmpV4Type: ICMPv4Type, code: UByte, checksum: UShort, order: ByteOrder = ByteOrder.BIG_ENDIAN): ICMPv4Header {
             return when (icmpV4Type) {
                 ICMPv4Type.ECHO_REPLY, ICMPv4Type.ECHO_REQUEST -> {
-                    ICMPv4EchoPacket.fromStream(buffer, icmpV4Type, checksum, order)
+                    ICMPv4EchoPacket.fromStream(buffer, limit, icmpV4Type, checksum, order)
                 }
                 ICMPv4Type.DESTINATION_UNREACHABLE -> {
-                    ICMPv4DestinationUnreachablePacket.fromStream(buffer, code, checksum, order)
+                    ICMPv4DestinationUnreachablePacket.fromStream(buffer, limit, code, checksum, order)
                 }
                 ICMPv4Type.TIME_EXCEEDED -> {
-                    ICMPv4TimeExceededPacket.fromStream(buffer, code, checksum, order)
+                    ICMPv4TimeExceededPacket.fromStream(buffer, limit, code, checksum, order)
                 }
                 else -> {
                     throw PacketHeaderException("Unsupported ICMPv4 type")

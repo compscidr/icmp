@@ -16,20 +16,27 @@ abstract class ICMPHeader(val type: ICMPType, val code: UByte, val checksum: USh
         const val ICMP_HEADER_MIN_LENGTH: UShort = 4u
         const val ICMP_CHECKSUM_OFFSET: UShort = 2u
 
-        fun fromStream(byteBuffer: ByteBuffer, isIcmpV4: Boolean = true, order: ByteOrder = ByteOrder.BIG_ENDIAN): ICMPHeader {
-            byteBuffer.order(order)
-            if (byteBuffer.remaining() < ICMP_HEADER_MIN_LENGTH.toInt()) {
-                throw PacketHeaderException("Buffer too small, expected at least ${ICMP_HEADER_MIN_LENGTH.toInt()} bytes, got ${byteBuffer.remaining()}")
+        /**
+         * The limit is used to prevent reading past the end of the buffer. This is useful for ICMP
+         * packets with payloads. If you are parsing a stream that contains multiple IP packets with
+         * ICMP in them, you might find that if you read to the end of the buffer, you will
+         * interpret the next IP header as part of the ICMP packet. The limit lets us control this
+         * and can be set based on the IP header's payload length.
+         */
+        fun fromStream(buffer: ByteBuffer, limit: Int = buffer.remaining(), isIcmpV4: Boolean = true, order: ByteOrder = ByteOrder.BIG_ENDIAN): ICMPHeader {
+            buffer.order(order)
+            if (buffer.remaining() < ICMP_HEADER_MIN_LENGTH.toInt()) {
+                throw PacketHeaderException("Buffer too small, expected at least ${ICMP_HEADER_MIN_LENGTH.toInt()} bytes, got ${buffer.remaining()}")
             }
-            val newType = if (isIcmpV4) ICMPv4Type.fromValue(byteBuffer.get().toUByte()) else ICMPv6Type.fromValue(byteBuffer.get().toUByte())
-            val newCode = byteBuffer.get().toUByte()
-            val newChecksum = byteBuffer.short.toUShort()
+            val newType = if (isIcmpV4) ICMPv4Type.fromValue(buffer.get().toUByte()) else ICMPv6Type.fromValue(buffer.get().toUByte())
+            val newCode = buffer.get().toUByte()
+            val newChecksum = buffer.short.toUShort()
             return when (newType) {
                 is ICMPv4Type -> {
-                    ICMPv4Header.fromStream(byteBuffer, newType, newCode, newChecksum, order)
+                    ICMPv4Header.fromStream(buffer, limit, newType, newCode, newChecksum, order)
                 }
                 is ICMPv6Type -> {
-                    ICMPv6Header.fromStream(byteBuffer, newType, newCode, newChecksum, order)
+                    ICMPv6Header.fromStream(buffer, limit, newType, newCode, newChecksum, order)
                 }
                 else -> {
                     throw PacketHeaderException("Unsupported ICMP type")

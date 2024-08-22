@@ -2,6 +2,7 @@ package com.jasonernst.icmp_common.v6
 
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.min
 
 /**
  * https://www.rfc-editor.org/rfc/rfc4861.html#section-4.1 page 18
@@ -40,9 +41,9 @@ import java.nio.ByteOrder
 class ICMPv6RouterSolicitationPacket(val data: ByteArray = ByteArray(0)): ICMPv6Header(icmPv6Type = ICMPv6Type.ROUTER_SOLICITATION_V6, code = 0u, checksum = 0u) {
 
     companion object {
-        fun fromStream(buffer: ByteBuffer, order: ByteOrder = ByteOrder.BIG_ENDIAN): ICMPv6RouterSolicitationPacket {
+        fun fromStream(buffer: ByteBuffer, limit: Int = buffer.remaining(), checksum: UShort, order: ByteOrder = ByteOrder.BIG_ENDIAN): ICMPv6RouterSolicitationPacket {
             buffer.order(order)
-            val remainingBuffer = ByteArray(buffer.remaining())
+            val remainingBuffer = ByteArray(min(buffer.remaining(), limit - ICMP_HEADER_MIN_LENGTH.toInt()))
             buffer.get(remainingBuffer)
             return ICMPv6RouterSolicitationPacket(data = remainingBuffer)
         }

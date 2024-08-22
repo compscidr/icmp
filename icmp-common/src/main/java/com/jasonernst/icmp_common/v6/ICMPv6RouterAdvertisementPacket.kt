@@ -2,6 +2,7 @@ package com.jasonernst.icmp_common.v6
 
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.min
 
 /**
  * https://www.rfc-editor.org/rfc/rfc4861.html#section-4.2 page 19
@@ -30,7 +31,7 @@ class ICMPv6RouterAdvertisementPacket(val curHopLimit: UByte,
         // cur hop limit (1 byte) + flags (1 byte) + router lifetime (2 bytes) + reachable time (4 bytes) + retrans timer (4 bytes)
         const val ICMP_ADVERTISEMENT_PACKET_MIN_LENGTH: UShort = 12u
 
-        fun fromStream(buffer: ByteBuffer, checksum: UShort, order: ByteOrder = ByteOrder.BIG_ENDIAN): ICMPv6RouterAdvertisementPacket {
+        fun fromStream(buffer: ByteBuffer,  limit: Int = buffer.remaining(), checksum: UShort, order: ByteOrder = ByteOrder.BIG_ENDIAN): ICMPv6RouterAdvertisementPacket {
             buffer.order(order)
             val curHopLimit = buffer.get().toUByte()
             val flags = buffer.get().toUByte()
@@ -39,7 +40,7 @@ class ICMPv6RouterAdvertisementPacket(val curHopLimit: UByte,
             val routerLifetime = buffer.short.toUShort()
             val reachableTime = buffer.int.toUInt()
             val retransTimer = buffer.int.toUInt()
-            val options = ByteArray(buffer.remaining())
+            val options = ByteArray(min(buffer.remaining(), limit - ICMP_HEADER_MIN_LENGTH.toInt() - ICMP_ADVERTISEMENT_PACKET_MIN_LENGTH.toInt()))
             buffer.get(options)
             return ICMPv6RouterAdvertisementPacket(curHopLimit, m, o, routerLifetime, reachableTime, retransTimer, options)
         }

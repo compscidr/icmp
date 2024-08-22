@@ -24,7 +24,7 @@ class ICMPv4Test {
         val buffer = ByteBuffer.wrap(icmPv4EchoPacket.toByteArray())
         val stringDumper = StringPacketDumper(logger)
         stringDumper.dumpBuffer(buffer, 0, buffer.limit())
-        val parsedPacket = ICMPHeader.fromStream(buffer, true)
+        val parsedPacket = ICMPHeader.fromStream(buffer, isIcmpV4 = true)
         assertEquals(icmPv4EchoPacket, parsedPacket)
     }
 
@@ -39,7 +39,7 @@ class ICMPv4Test {
         )
         val buffer = ByteBuffer.wrap(icmPv4EchoPacket.toByteArray())
         stringDumper.dumpBuffer(buffer, 0, buffer.limit())
-        val parsedPacket = ICMPHeader.fromStream(buffer, true)
+        val parsedPacket = ICMPHeader.fromStream(buffer, isIcmpV4 = true)
         assertEquals(icmPv4EchoPacket, parsedPacket)
     }
 
@@ -52,7 +52,7 @@ class ICMPv4Test {
         )
         val buffer = ByteBuffer.wrap(icmpV4DestinationUnreachablePacket.toByteArray())
         stringDumper.dumpBuffer(buffer, 0, buffer.limit())
-        val parsedPacket = ICMPHeader.fromStream(buffer, true)
+        val parsedPacket = ICMPHeader.fromStream(buffer, isIcmpV4 = true)
         assertEquals(icmpV4DestinationUnreachablePacket, parsedPacket)
     }
 
@@ -65,7 +65,7 @@ class ICMPv4Test {
         )
         val buffer = ByteBuffer.wrap(icmPv4TimeExceededPacket.toByteArray())
         stringDumper.dumpBuffer(buffer, 0, buffer.limit())
-        val parsedPacket = ICMPHeader.fromStream(buffer, true)
+        val parsedPacket = ICMPHeader.fromStream(buffer, isIcmpV4 = true)
         assertEquals(icmPv4TimeExceededPacket, parsedPacket)
     }
 

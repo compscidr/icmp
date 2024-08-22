@@ -2,6 +2,7 @@ package com.jasonernst.icmp_common.v6
 
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.min
 
 /**
  * https://datatracker.ietf.org/doc/html/rfc3810
@@ -43,9 +44,9 @@ import java.nio.ByteOrder
 class ICMPv6MulticastListenerDiscoveryV2(val data: ByteArray = ByteArray(0)): ICMPv6Header(icmPv6Type = ICMPv6Type.MULTICAST_LISTENER_DISCOVERY_V2, code = 0u, checksum = 0u) {
 
     companion object {
-        fun fromStream(buffer: ByteBuffer, checksum: UShort, order: ByteOrder = ByteOrder.BIG_ENDIAN): ICMPv6MulticastListenerDiscoveryV2 {
+        fun fromStream(buffer: ByteBuffer, limit: Int = buffer.remaining(), checksum: UShort, order: ByteOrder = ByteOrder.BIG_ENDIAN): ICMPv6MulticastListenerDiscoveryV2 {
             buffer.order(order)
-            val remainingBuffer = ByteArray(buffer.remaining())
+            val remainingBuffer = ByteArray(min(buffer.remaining(), limit - ICMP_HEADER_MIN_LENGTH.toInt()))
             buffer.get(remainingBuffer)
             return ICMPv6MulticastListenerDiscoveryV2(data = remainingBuffer)
         }

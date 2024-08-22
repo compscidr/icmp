@@ -24,7 +24,7 @@ class ICMPv6Test {
         val buffer = ByteBuffer.wrap(icmPv6EchoPacket.toByteArray())
         val stringDumper = StringPacketDumper(logger)
         stringDumper.dumpBuffer(buffer, 0, buffer.limit())
-        val parsedPacket = ICMPHeader.fromStream(buffer, false)
+        val parsedPacket = ICMPHeader.fromStream(buffer, isIcmpV4 = false)
         assertEquals(icmPv6EchoPacket, parsedPacket)
     }
 
@@ -40,7 +40,7 @@ class ICMPv6Test {
         val buffer = ByteBuffer.wrap(icmPv6EchoPacket.toByteArray())
 
         stringDumper.dumpBuffer(buffer, 0, buffer.limit())
-        val parsedPacket = ICMPHeader.fromStream(buffer, false)
+        val parsedPacket = ICMPHeader.fromStream(buffer, isIcmpV4 = false)
         assertEquals(icmPv6EchoPacket, parsedPacket)
     }
 
@@ -53,7 +53,7 @@ class ICMPv6Test {
         )
         val buffer = ByteBuffer.wrap(icmpV6DestinationUnreachablePacket.toByteArray())
         stringDumper.dumpBuffer(buffer, 0, buffer.limit())
-        val parsedPacket = ICMPHeader.fromStream(buffer, false)
+        val parsedPacket = ICMPHeader.fromStream(buffer, isIcmpV4 = false)
         assertEquals(icmpV6DestinationUnreachablePacket, parsedPacket)
     }
 
@@ -66,7 +66,7 @@ class ICMPv6Test {
         )
         val buffer = ByteBuffer.wrap(icmPv6TimeExceededPacket.toByteArray())
         stringDumper.dumpBuffer(buffer, 0, buffer.limit())
-        val parsedPacket = ICMPHeader.fromStream(buffer, false)
+        val parsedPacket = ICMPHeader.fromStream(buffer, isIcmpV4 = false)
         assertEquals(icmPv6TimeExceededPacket, parsedPacket)
     }
 
@@ -75,7 +75,7 @@ class ICMPv6Test {
         val icmpV6MulticastListenerDiscoveryV2 = ICMPv6MulticastListenerDiscoveryV2(data = byteArrayOf(0x01, 0x02, 0x03, 0x04))
         val buffer = ByteBuffer.wrap(icmpV6MulticastListenerDiscoveryV2.toByteArray())
         stringDumper.dumpBuffer(buffer, 0, buffer.limit())
-        val parsedPacket = ICMPHeader.fromStream(buffer, false)
+        val parsedPacket = ICMPHeader.fromStream(buffer, isIcmpV4 = false)
         assertEquals(icmpV6MulticastListenerDiscoveryV2, parsedPacket)
     }
 
@@ -92,7 +92,7 @@ class ICMPv6Test {
         )
         val buffer = ByteBuffer.wrap(icmpV6RouterAdvertisement.toByteArray())
         stringDumper.dumpBuffer(buffer, 0, buffer.limit())
-        val parsedPacket = ICMPHeader.fromStream(buffer, false)
+        val parsedPacket = ICMPHeader.fromStream(buffer, isIcmpV4 = false)
         assertEquals(icmpV6RouterAdvertisement, parsedPacket)
     }
 
@@ -103,7 +103,7 @@ class ICMPv6Test {
         )
         val buffer = ByteBuffer.wrap(icmpV6RouterSolicitation.toByteArray())
         stringDumper.dumpBuffer(buffer, 0, buffer.limit())
-        val parsedPacket = ICMPHeader.fromStream(buffer, false)
+        val parsedPacket = ICMPHeader.fromStream(buffer, isIcmpV4 = false)
         assertEquals(icmpV6RouterSolicitation, parsedPacket)
     }
 
