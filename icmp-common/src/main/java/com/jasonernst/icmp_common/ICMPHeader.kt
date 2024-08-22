@@ -9,7 +9,7 @@ import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-abstract class ICMPHeader(val type: ICMPType, val code: UByte, val checksum: UShort) {
+abstract class ICMPHeader(val type: ICMPType, val code: UByte, var checksum: UShort) {
 
     companion object {
         // uByte + uByte + uShort
