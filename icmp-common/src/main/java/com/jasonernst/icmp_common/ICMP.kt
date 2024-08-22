@@ -146,7 +146,7 @@ abstract class ICMP {
             logger.debug("bytesRecieved: $bytesRecieved\n${stringDumper.dumpBufferToString(recvBuffer, 0, bytesRecieved)}")
 
             recvBuffer.position(0) // bug in the string dumping code
-            val response = ICMPHeader.fromStream(recvBuffer, inetAddress is Inet4Address)
+            val response = ICMPHeader.fromStream(recvBuffer, isIcmpV4 = inetAddress is Inet4Address)
 
             // todo: verify checksum. The Inetaddress we have is the destination address, but I'm
             //  not entirely sure what the source address will be. Probably need to use the fd to
