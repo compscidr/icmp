@@ -46,7 +46,7 @@ class ICMPv6RouterAdvertisementPacket(val curHopLimit: UByte,
     }
 
     override fun size(): Int {
-        return ICMP_HEADER_MIN_LENGTH.toInt()
+        return ICMP_HEADER_MIN_LENGTH.toInt() + ICMP_ADVERTISEMENT_PACKET_MIN_LENGTH.toInt() + options.size
     }
 
     override fun toByteArray(order: ByteOrder): ByteArray {
