@@ -127,7 +127,11 @@ abstract class ICMP {
         val stringDumper = StringPacketDumper()
         logger.debug("bytesToSend: ${icmpHeader.toByteArray().size}\n${stringDumper.dumpBufferToString(bytesToSend, 0 , bytesToSend.limit())}")
         val sendTimeMs = System.currentTimeMillis()
-        val bytesSent = sendto(fd, bytesToSend, 0, inetAddress, ICMP_PORT)
+        val bytesSent = try {
+            sendto(fd, bytesToSend, 0, inetAddress, ICMP_PORT)
+        } catch (e: Exception) {
+            return PingResult.Failed(e.message ?: "Failed to ping ${inetAddress.hostAddress}")
+        }
         logger.debug("bytesSent: $bytesSent")
 
         val recvBuffer = ByteBuffer.allocate(1024)
