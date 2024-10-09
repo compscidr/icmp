@@ -20,7 +20,7 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
+#          cache: gradle # https://github.com/actions/setup-java/issues/683
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build and Publish the Common Library to the local Maven repository
