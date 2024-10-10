@@ -47,6 +47,7 @@ included in the jar file. This means that the .so file will be extracted to /tmp
 and read from there. This is not ideal, but it is a workaround for now. What should happen, is that
 the .so is produced as a separate artifact and then included in the library as a dependency and the
 location of the .so file is added to the java.library.path. This is a future improvement.
+
 ```kotlin
 implementation("com.jasonernst.icmp:icmp-linux")
 ```
@@ -64,7 +65,24 @@ ICMPLinux.ping("google.com", 500, 1000)
 ICMPLinux.ping(InetAddress.getLocalHost(), 1000)
 ```
 
-Building a library that may be used on both Android and Linux JVM:
+On Linux, in order to make a userspace ping without root, it may be required to set a kernel flag
+in order to use this and not get permission denied errors, see:
+- https://opennms.discourse.group/t/how-to-allow-unprivileged-users-to-use-icmp-ping/1573.
+- [iputils/iputils#105 (comment)](https://github.com/iputils/iputils/issues/105#issuecomment-431475908)
+
+You may also find, that when you use GH actions runners, tests using this code fails, even if
+the above fix for permission errors is done. This is because:
+
+> GitHub hosts Linux and Windows runners on virtual machines in Microsoft Azure with the GitHub Actions runner application installed. The GitHub-hosted runner application is a fork of the Azure Pipelines Agent. Inbound ICMP packets are blocked for all Azure virtual machines, so ping or traceroute commands might not work.
+
+https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners#cloud-hosts-used-by-github-hosted-runners
+
+There are a few workarounds for this. 1) You could use a self-hosted runner on your own network 
+where ICMP is not blocked. 2) You could modify your tests to only ping to `127.0.0.1` and `::1`
+within GH actions. 3) You could connect GH actions to tailscale or some other VPN solution so
+that the pings go through the VPN interface.
+
+## Building a library that may be used on both Android and Linux JVM:
 ```kotlin
 api("com.jasonernst.icmp:icmp-common")
 ```
