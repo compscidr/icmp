@@ -1,6 +1,7 @@
 plugins {
     id("java")
     alias(libs.plugins.org.jetbrains.kotlin.jvm)
+    alias(libs.plugins.kotlinter)
     alias(libs.plugins.git.version) // https://stackoverflow.com/a/71212144
 }
 

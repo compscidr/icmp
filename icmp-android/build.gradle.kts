@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.sonatype.maven.central)
     alias(libs.plugins.gradleup.nmcp)
     alias(libs.plugins.dokka)
+    alias(libs.plugins.kotlinter)
     id("signing") // https://medium.com/nerd-for-tech/oh-no-another-publishing-android-artifacts-to-maven-central-guide-9d7f300ebd74
     id("jacoco")
 }
