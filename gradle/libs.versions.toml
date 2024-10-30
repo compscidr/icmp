@@ -1,6 +1,6 @@
 [versions]
 agp = "8.7.1"
-androidx_lifecycle = "2.8.6"
+androidx_lifecycle = "2.8.7"
 androidx_test_runner = "1.6.2"
 androidx_test_monitor = "1.7.2"
 androidx_test_ui_automator = "2.3.0"
