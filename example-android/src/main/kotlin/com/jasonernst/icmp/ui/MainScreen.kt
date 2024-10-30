@@ -75,7 +75,7 @@ fun MainScreen(vm: MainScreenViewModel = viewModel()) {
                     ResultItem(modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp)
-                        .animateItemPlacement(),
+                        .animateItem(),
                         item = stats.results[index])
                 }
             }
