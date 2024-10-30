@@ -1,8 +1,8 @@
 package com.jasonernst.icmp.ui
 
 import androidx.lifecycle.ViewModel
-import com.jasonernst.icmp_android.ICMPAndroid
-import com.jasonernst.icmp_common.PingResult
+import com.jasonernst.icmp.android.ICMPAndroid
+import com.jasonernst.icmp.common.PingResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

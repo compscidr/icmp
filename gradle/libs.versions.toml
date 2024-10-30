@@ -1,5 +1,5 @@
 [versions]
-agp = "8.7.1"
+agp = "8.6.1"
 androidx_lifecycle = "2.8.6"
 androidx_test_runner = "1.6.2"
 androidx_test_monitor = "1.7.2"
@@ -9,6 +9,7 @@ compose-activity = "1.9.3"
 dokka = "1.9.20"
 jupiter = "5.11.3"
 kotlin = "2.0.21"
+kotlinter = "4.4.1"
 kotlinxCoroutinesCore = "1.9.0"
 logback-android = "3.0.0"
 logback-classic = "1.5.12"
@@ -56,6 +57,7 @@ de-mannodermaus-android-junit5 = { id = "de.mannodermaus.android-junit5", versio
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 git-version = { id = "me.qoomon.git-versioning", version = "6.4.4" }
 gradleup-nmcp = { id = "com.gradleup.nmcp", version = "0.0.9"}
+kotlinter = { id = "org.jmailen.kotlinter", version.ref = "kotlinter" }
 org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 org-jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 sonatype-maven-central = { id = "com.vanniktech.maven.publish", version = "0.30.0" }

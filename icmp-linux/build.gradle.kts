@@ -39,7 +39,7 @@ gitVersioning.apply {
 }
 
 dependencies {
-    api("com.jasonernst.icmp:icmp_common:$version")
+    api("com.jasonernst.icmp:icmp.common:$version")
     testImplementation(libs.bundles.unit.test)
     testImplementation(libs.logback.classic)
 }

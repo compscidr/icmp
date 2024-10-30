@@ -92,7 +92,7 @@ gitVersioning.apply {
 }
 
 dependencies {
-    api("com.jasonernst.icmp:icmp_common:$version")
+    api("com.jasonernst.icmp:icmp.common:$version")
     implementation(libs.logback.android)
 
     androidTestImplementation(libs.bundles.android.test)

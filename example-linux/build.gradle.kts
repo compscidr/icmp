@@ -9,6 +9,10 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
+kotlin {
+    jvmToolchain(17)
+}
+
 version = "0.0.0-SNAPSHOT"
 gitVersioning.apply {
     refs {
