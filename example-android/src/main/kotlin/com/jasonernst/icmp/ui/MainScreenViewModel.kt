@@ -1,7 +1,7 @@
 package com.jasonernst.icmp.ui
 
 import androidx.lifecycle.ViewModel
-import com.jasonernst.icmp.android.ICMPAndroid
+import com.jasonernst.icmp.android.IcmpAndroid
 import com.jasonernst.icmp.common.PingResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +19,7 @@ private const val RESULT_CACHE_CAPACITY = 20
 
 class MainScreenViewModel: ViewModel() {
     private val logger = LoggerFactory.getLogger(javaClass)
-    private val icmp = ICMPAndroid
+    private val icmp = IcmpAndroid
     private val _hostField = MutableStateFlow("8.8.8.8")
 
     private var _minPingMS = Long.MAX_VALUE
