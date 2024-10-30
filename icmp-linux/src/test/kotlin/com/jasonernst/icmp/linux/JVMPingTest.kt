@@ -19,10 +19,10 @@ class JVMPingTest {
 
     companion object {
         // assumes this is run from within docker, or a machine with docker running
-        const val UNREACHABLE_IPv4 = "180.171.171.171"
+        const val UNREACHABLE_IPV4 = "180.171.171.171"
 
         // this should be the host machine if docker is running
-        const val REACHABLE_IPv4 = "172.17.0.1"
+        const val REACHABLE_IPV4 = "172.17.0.1"
     }
 
     @Test fun pingIpv4Localhost() {
@@ -41,13 +41,13 @@ class JVMPingTest {
     @Test
     fun pingReachableIpv4() {
         runBlocking {
-            icmp.ping(REACHABLE_IPv4)
+            icmp.ping(REACHABLE_IPV4)
         }
     }
 
     @Test fun pingUnreachableIpv4() {
         runBlocking {
-            val result = icmp.ping(UNREACHABLE_IPv4)
+            val result = icmp.ping(UNREACHABLE_IPV4)
             assertTrue(result is PingResult.Failed)
         }
     }

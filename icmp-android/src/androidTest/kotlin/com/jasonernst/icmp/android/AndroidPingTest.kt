@@ -21,10 +21,10 @@ class AndroidPingTest {
 
     companion object {
         // assumes this is unreachable from the android phone
-        const val UNREACHABLE_IPv4 = "180.171.171.171"
+        const val UNREACHABLE_IPV4 = "180.171.171.171"
 
         // should always be reachable
-        const val REACHABLE_IPv4 = "127.0.0.1"
+        const val REACHABLE_IPV4 = "127.0.0.1"
     }
 
     @Test
@@ -43,13 +43,13 @@ class AndroidPingTest {
     @Test
     fun pingReachableIpv4() {
         runBlocking {
-            icmp.ping(REACHABLE_IPv4)
+            icmp.ping(REACHABLE_IPV4)
         }
     }
 
     @Test fun pingUnreachableIpv4() {
         runBlocking {
-            val result = icmp.ping(UNREACHABLE_IPv4)
+            val result = icmp.ping(UNREACHABLE_IPV4)
             assertTrue(result is PingResult.Failed)
         }
     }

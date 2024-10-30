@@ -8,7 +8,7 @@ import java.net.InetAddress
 import java.nio.ByteBuffer
 
 @Suppress("UnsafeDynamicallyLoadedCode")
-object IcmpLinux: Icmp() {
+object IcmpLinux : Icmp() {
     private val logger = LoggerFactory.getLogger(javaClass)
 
     init {
@@ -49,22 +49,30 @@ object IcmpLinux: Icmp() {
      * @param type the socket type (e.g. SOCK_DGRAM)
      * @param protocol the protocol (e.g. IPPROTO_ICMP)
      */
-    external fun socket(domain: Int, type: Int, protocol: Int): FileDescriptor
+    external fun socket(
+        domain: Int,
+        type: Int,
+        protocol: Int,
+    ): FileDescriptor
 
-    override fun obtainSocketIpv4Socket(): FileDescriptor {
-        return socket(AF_INET, SOCK_DGRAM, IPPROTO_ICMP)
-    }
+    override fun obtainSocketIpv4Socket(): FileDescriptor = socket(AF_INET, SOCK_DGRAM, IPPROTO_ICMP)
 
-    override fun obtainSocketIpv6Socket(): FileDescriptor {
-        return socket(AF_INET6, SOCK_DGRAM, IPPROTO_ICMPV6)
-    }
+    override fun obtainSocketIpv6Socket(): FileDescriptor = socket(AF_INET6, SOCK_DGRAM, IPPROTO_ICMPV6)
 
     /**
      * Matches the signature of the android.system.Os.setsockoptInt function.
      */
-    external override fun setsockoptInt(fd: FileDescriptor, level: Int, optname: Int, optval: Int): Int
+    external override fun setsockoptInt(
+        fd: FileDescriptor,
+        level: Int,
+        optname: Int,
+        optval: Int,
+    ): Int
 
-    override fun setsocketRecvTimeout(fd: FileDescriptor, timeoutMS: Long) {
+    override fun setsocketRecvTimeout(
+        fd: FileDescriptor,
+        timeoutMS: Long,
+    ) {
         // see: sys/time.h
         val sec = timeoutMS / 1000
         val usec = (timeoutMS % 1000) * 1000
@@ -76,22 +84,36 @@ object IcmpLinux: Icmp() {
         buffer: ByteBuffer,
         flags: Int,
         address: InetAddress,
-        port: Int
-    ): Int {
-        return sendTo(fd, buffer.array(), flags, address.address, port)
-    }
+        port: Int,
+    ): Int = sendTo(fd, buffer.array(), flags, address.address, port)
 
     override fun recvfrom(
         fd: FileDescriptor,
         buffer: ByteBuffer,
         flags: Int,
         address: InetAddress,
-        port: Int
-    ): Int {
-        return recvFrom(fd, buffer.array(), flags, address.address, port)
-    }
+        port: Int,
+    ): Int = recvFrom(fd, buffer.array(), flags, address.address, port)
 
-    private external fun setsocketRecvTimeout(fd: FileDescriptor, sec: Long, usec: Long): Int
-    external fun sendTo(fd: FileDescriptor, buffer: ByteArray, flags: Int, address: ByteArray, port: Int): Int
-    external fun recvFrom(fd: FileDescriptor, buffer: ByteArray, flags: Int, address: ByteArray, port: Int): Int
+    private external fun setsocketRecvTimeout(
+        fd: FileDescriptor,
+        sec: Long,
+        usec: Long,
+    ): Int
+
+    external fun sendTo(
+        fd: FileDescriptor,
+        buffer: ByteArray,
+        flags: Int,
+        address: ByteArray,
+        port: Int,
+    ): Int
+
+    external fun recvFrom(
+        fd: FileDescriptor,
+        buffer: ByteArray,
+        flags: Int,
+        address: ByteArray,
+        port: Int,
+    ): Int
 }
