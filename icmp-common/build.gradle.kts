@@ -70,7 +70,7 @@ nmcp {
 
 // see: https://vanniktech.github.io/gradle-maven-publish-plugin/central/#configuring-the-pom
 mavenPublishing {
-    coordinates("com.jasonernst.icmp", "icmp.common", version.toString())
+    coordinates("com.jasonernst.icmp", "icmp_common", version.toString())
     pom {
         name = "ICMP Common"
         description = "Common code for sending and receiving ICMP packets on Android and Linux"
