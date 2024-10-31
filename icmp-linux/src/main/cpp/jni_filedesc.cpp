@@ -4,12 +4,17 @@
 #include <cstring>
 #include <iostream>
 #include <netinet/in.h>
+#include <jni.h>
+#include <jni.h>
 
 /**
 * https://www.kfu.com/~nsayer/Java/jni-filedesc.html
 */
+
 extern "C"
-JNIEXPORT jobject JNICALL Java_com_jasonernst_icmp_1linux_ICMPLinux_socket(JNIEnv *env, jclass _ignore, jint domain, jint type, jint protocol) {
+JNIEXPORT jobject JNICALL
+Java_com_jasonernst_icmp_linux_IcmpLinux_socket(JNIEnv *env, jobject thiz, jint domain,
+                                                    jint type, jint protocol) {
     jfieldID field_fd;
     jmethodID const_fdesc;
     jclass class_fdesc, class_ioex;
@@ -61,13 +66,19 @@ int getFDFromFileDescriptor(JNIEnv *env, jobject fd) {
 }
 
 extern "C"
-JNIEXPORT jint JNICALL Java_com_jasonernst_icmp_1linux_ICMPLinux_setsockoptInt(JNIEnv *env, jclass _ignore, jobject fileDescriptor, jint level, jint optname, jint optval) {
+JNIEXPORT jint JNICALL
+Java_com_jasonernst_icmp_linux_IcmpLinux_setsockoptInt(JNIEnv *env, jclass _ignore,
+                                                       jobject fileDescriptor,
+                                                       jint level, jint optname, jint optval) {
     int fd = getFDFromFileDescriptor(env, fileDescriptor);
     return setsockopt(fd, level, optname, &optval, sizeof(optval));
 }
 
 extern "C"
-JNIEXPORT jint JNICALL Java_com_jasonernst_icmp_1linux_ICMPLinux_setsocketRecvTimeout(JNIEnv *env, jclass _ignore, jobject fileDescriptor, jlong sec, jlong usec) {
+JNIEXPORT jint JNICALL
+Java_com_jasonernst_icmp_linux_IcmpLinux_setsocketRecvTimeout(JNIEnv *env, jclass _ignore,
+                                                              jobject fileDescriptor,
+                                                              jlong sec, jlong usec) {
     struct timeval tv;
     tv.tv_sec = sec;
     tv.tv_usec = usec;
@@ -76,7 +87,10 @@ JNIEXPORT jint JNICALL Java_com_jasonernst_icmp_1linux_ICMPLinux_setsocketRecvTi
 }
 
 extern "C"
-JNIEXPORT jint JNICALL Java_com_jasonernst_icmp_1linux_ICMPLinux_sendTo(JNIEnv *env, jclass _ignore, jobject fileDescriptor, jbyteArray data, jint flags, jbyteArray address, jint port) {
+JNIEXPORT jint JNICALL
+Java_com_jasonernst_icmp_linux_IcmpLinux_sendTo(JNIEnv *env, jclass _ignore,
+                                                jobject fileDescriptor, jbyteArray data,
+                                                jint flags, jbyteArray address, jint port) {
 
     jbyte *data_ptr, *addr_ptr;
     jsize data_len, addr_len;
@@ -124,7 +138,10 @@ JNIEXPORT jint JNICALL Java_com_jasonernst_icmp_1linux_ICMPLinux_sendTo(JNIEnv *
 }
 
 extern "C"
-JNIEXPORT jint JNICALL Java_com_jasonernst_icmp_1linux_ICMPLinux_recvFrom(JNIEnv *env, jclass _ignore, jobject fileDescriptor, jbyteArray data, jint flags, jbyteArray address, jint port) {
+JNIEXPORT jint
+Java_com_jasonernst_icmp_linux_IcmpLinux_recvFrom(JNIEnv *env, jclass _ignore,
+                                                  jobject fileDescriptor, jbyteArray data,
+                                                  int flags, jbyteArray address, jint port) {
     struct sockaddr_in addr;
     jbyte *data_ptr, *addr_ptr;
     jsize data_len, addr_len;

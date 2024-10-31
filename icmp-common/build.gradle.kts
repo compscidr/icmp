@@ -1,6 +1,7 @@
 plugins {
     id("java-library")
     alias(libs.plugins.org.jetbrains.kotlin.jvm)
+    alias(libs.plugins.kotlinter)
     alias(libs.plugins.git.version) // https://stackoverflow.com/a/71212144
     alias(libs.plugins.sonatype.maven.central)
     alias(libs.plugins.gradleup.nmcp)
@@ -40,6 +41,7 @@ dependencies {
 
     testImplementation(libs.bundles.unit.test)
     testImplementation(libs.logback.classic)
+    testImplementation(libs.packetdumper)
 }
 
 tasks.withType<Test>().configureEach {
@@ -68,7 +70,7 @@ nmcp {
 
 // see: https://vanniktech.github.io/gradle-maven-publish-plugin/central/#configuring-the-pom
 mavenPublishing {
-    coordinates("com.jasonernst.icmp", "icmp_common", version.toString())
+    coordinates("com.jasonernst.icmp", "icmp.common", version.toString())
     pom {
         name = "ICMP Common"
         description = "Common code for sending and receiving ICMP packets on Android and Linux"
