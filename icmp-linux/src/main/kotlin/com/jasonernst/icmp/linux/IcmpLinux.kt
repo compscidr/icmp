@@ -49,7 +49,7 @@ object IcmpLinux : Icmp() {
      * @param type the socket type (e.g. SOCK_DGRAM)
      * @param protocol the protocol (e.g. IPPROTO_ICMP)
      */
-    external fun socket(
+    private external fun socket(
         domain: Int,
         type: Int,
         protocol: Int,
