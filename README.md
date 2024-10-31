@@ -24,7 +24,7 @@ The android library depends on the android.system.Os.socket() method. The common
 this method + some other native methods so that the library can be used on both Android and Linux
 JVM implementations.
 ```kotlin
-implementation("com.jasonernst.icmp:icmp-android")
+implementation("com.jasonernst.icmp:icmp_android")
 ```
 
 Using the Library:
@@ -49,7 +49,7 @@ the .so is produced as a separate artifact and then included in the library as a
 location of the .so file is added to the java.library.path. This is a future improvement.
 
 ```kotlin
-implementation("com.jasonernst.icmp:icmp-linux")
+implementation("com.jasonernst.icmp:icmp_linux")
 ```
 
 Using the library:
@@ -84,7 +84,7 @@ that the pings go through the VPN interface.
 
 ## Building a library that may be used on both Android and Linux JVM:
 ```kotlin
-api("com.jasonernst.icmp:icmp-common")
+api("com.jasonernst.icmp:icmp_common")
 ```
 
 ```kotlin
