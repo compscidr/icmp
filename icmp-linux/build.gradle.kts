@@ -31,7 +31,7 @@ tasks.jacocoTestReport {
     }
 }
 
-version = "0.0.0-SNAPSHOT"
+version = "1.0.0"
 gitVersioning.apply {
     refs {
         branch(".+") { version = "\${ref}-SNAPSHOT" }
