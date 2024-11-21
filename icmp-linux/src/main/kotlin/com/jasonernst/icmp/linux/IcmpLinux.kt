@@ -9,7 +9,7 @@ import java.nio.ByteBuffer
 
 @Suppress("UnsafeDynamicallyLoadedCode")
 object IcmpLinux : Icmp() {
-    private val logger = LoggerFactory.getLogger(javaClass)
+    val logger = LoggerFactory.getLogger(javaClass)
 
     init {
         try {

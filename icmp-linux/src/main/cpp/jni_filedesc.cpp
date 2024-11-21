@@ -1,4 +1,5 @@
 #include <jni.h>
+#include "slf4j_native.h"
 #include <sys/socket.h>
 #include <cerrno>
 #include <cstring>
@@ -33,6 +34,7 @@ Java_com_jasonernst_icmp_linux_IcmpLinux_socket(JNIEnv *env, jobject thiz, jint 
         char buf[1024];
         sprintf(buf, "open: %s", strerror(errno));
         env->ThrowNew(class_ioex, buf);
+        //logger.info("ICMP: open socket errno {} {}\n", errno, strerror(errno));
         return NULL;
     }
 
@@ -88,10 +90,10 @@ Java_com_jasonernst_icmp_linux_IcmpLinux_setsocketRecvTimeout(JNIEnv *env, jclas
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_jasonernst_icmp_linux_IcmpLinux_sendTo(JNIEnv *env, jclass _ignore,
+Java_com_jasonernst_icmp_linux_IcmpLinux_sendTo(JNIEnv *env, jclass clazz,
                                                 jobject fileDescriptor, jbyteArray data,
                                                 jint flags, jbyteArray address, jint port) {
-
+    auto logger = Log(env, clazz);
     jbyte *data_ptr, *addr_ptr;
     jsize data_len, addr_len;
     data_ptr = env->GetByteArrayElements(data, NULL);
@@ -104,7 +106,7 @@ Java_com_jasonernst_icmp_linux_IcmpLinux_sendTo(JNIEnv *env, jclass _ignore,
     // determine if we have an ipv4 or ipv6 address by length
     int ret;
     if (addr_len == 4) {
-        printf("IPv4 address\n");
+        logger.info("ICMP: IPv4 address");
         struct sockaddr_in addr;
         memset(&addr, 0, sizeof(addr));
         addr.sin_family = AF_INET;
@@ -112,7 +114,7 @@ Java_com_jasonernst_icmp_linux_IcmpLinux_sendTo(JNIEnv *env, jclass _ignore,
         memcpy(&addr.sin_addr, addr_ptr, addr_len);
         ret = sendto(fd, data_ptr, data_len, flags, (struct sockaddr *)&addr, sizeof(addr));
     } else if (addr_len == 16) {
-        printf("IPv6 address\n");
+        logger.info("ICMP: IPv6 address");
         struct sockaddr_in6 addr;
         memset(&addr, 0, sizeof(addr));
         addr.sin6_family = AF_INET6;
@@ -120,7 +122,7 @@ Java_com_jasonernst_icmp_linux_IcmpLinux_sendTo(JNIEnv *env, jclass _ignore,
         memcpy(&addr.sin6_addr, addr_ptr, addr_len);
         ret = sendto(fd, data_ptr, data_len, flags, (struct sockaddr *)&addr, sizeof(addr));
     } else {
-        printf("Unknown address length\n");
+        logger.info("ICMP: Unknown address length");
     }
 
     if (ret < 0) {
@@ -128,6 +130,7 @@ Java_com_jasonernst_icmp_linux_IcmpLinux_sendTo(JNIEnv *env, jclass _ignore,
         char buf[1024];
         sprintf(buf, "sendTo: %s", strerror(errno));
         jclass class_ioex = env->FindClass("java/io/IOException");
+        logger.info("ICMP: sendTo socket errno {} {}\n", errno, strerror(errno));
         env->ThrowNew(class_ioex, buf);
     }
 
@@ -139,9 +142,10 @@ Java_com_jasonernst_icmp_linux_IcmpLinux_sendTo(JNIEnv *env, jclass _ignore,
 
 extern "C"
 JNIEXPORT jint
-Java_com_jasonernst_icmp_linux_IcmpLinux_recvFrom(JNIEnv *env, jclass _ignore,
+Java_com_jasonernst_icmp_linux_IcmpLinux_recvFrom(JNIEnv *env, jclass clazz,
                                                   jobject fileDescriptor, jbyteArray data,
                                                   int flags, jbyteArray address, jint port) {
+    auto logger = Log(env, clazz);
     struct sockaddr_in addr;
     jbyte *data_ptr, *addr_ptr;
     jsize data_len, addr_len;
@@ -163,6 +167,7 @@ Java_com_jasonernst_icmp_linux_IcmpLinux_recvFrom(JNIEnv *env, jclass _ignore,
         char buf[1024];
         sprintf(buf, "recvFrom: %s", strerror(errno));
         jclass class_ioex = env->FindClass("java/io/IOException");
+        logger.info("ICMP: recvFrom socket errno {} {}\n", errno, strerror(errno));
         env->ThrowNew(class_ioex, buf);
     }
 

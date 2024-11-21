@@ -5,4 +5,4 @@ find_package(JNI)
 
 include_directories(headers)
 include_directories(${JNI_INCLUDE_DIRS}/linux)
-add_library(icmp SHARED cpp/jni_filedesc.cpp)
+add_library(icmp SHARED cpp/jni_filedesc.cpp cpp/slf4j_native.cpp)

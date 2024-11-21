@@ -6,6 +6,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.platform.commons.logging.LoggerFactory
 import java.net.InetAddress
 import java.net.UnknownHostException
 
