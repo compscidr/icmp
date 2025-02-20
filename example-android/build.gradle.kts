@@ -15,12 +15,12 @@ gitVersioning.apply {
 
 android {
     namespace = "com.jasonernst.icmp"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.jasonernst.icmp.icmp_android"
         minSdk = 29
-        targetSdk = 34
+        targetSdk = 35
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     packaging {
