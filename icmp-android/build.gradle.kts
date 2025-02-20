@@ -13,11 +13,11 @@ plugins {
 
 android {
     namespace = "com.jasonernst.icmp_lib"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 29
-
+        targetSdk = 35
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
