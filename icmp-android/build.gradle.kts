@@ -96,6 +96,7 @@ dependencies {
     api("com.jasonernst.icmp:icmp_common:$version")
     implementation(libs.logback.android)
 
+    testImplementation(platform(libs.junit.bom))
     androidTestImplementation(libs.bundles.android.test)
     androidTestRuntimeOnly(libs.de.manodermaus.android.junit5.runner)
 }

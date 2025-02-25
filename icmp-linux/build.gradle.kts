@@ -41,8 +41,10 @@ gitVersioning.apply {
 
 dependencies {
     api("com.jasonernst.icmp:icmp_common:$version")
+    testImplementation(platform(libs.junit.bom))
     testImplementation(libs.bundles.unit.test)
     testImplementation(libs.logback.classic)
+    testRuntimeOnly(libs.bundles.test.runtime)
 }
 
 cmake {

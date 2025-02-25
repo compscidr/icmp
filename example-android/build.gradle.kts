@@ -59,7 +59,9 @@ dependencies {
     implementation(libs.bundles.compose)
     implementation(libs.bundles.androidx.lifecycle)
 
+    testImplementation(platform(libs.junit.bom))
     testImplementation(libs.bundles.unit.test)
     testImplementation(libs.logback.classic)
     androidTestImplementation(libs.bundles.android.test)
+    testRuntimeOnly(libs.bundles.test.runtime)
 }
