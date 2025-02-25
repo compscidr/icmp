@@ -26,5 +26,7 @@ dependencies {
     implementation("com.jasonernst.icmp:icmp_linux:$version")
     implementation(libs.logback.classic)
 
+    testImplementation(platform(libs.junit.bom))
     testImplementation(libs.bundles.unit.test)
+    testRuntimeOnly(libs.bundles.test.runtime)
 }

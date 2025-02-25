@@ -7,7 +7,6 @@ androidx_test_ui_automator = "2.3.0"
 compose-bom = "2025.02.00"
 compose-activity = "1.10.0"
 dokka = "2.0.0"
-jupiter = "5.11.4"
 kotlin = "2.1.10"
 kotlinter = "5.0.1"
 kotlinxCoroutinesCore = "1.10.1"
@@ -32,8 +31,11 @@ compose-ui = { module = "androidx.compose.ui:ui" }
 compose-material3 = { module = "androidx.compose.material3:material3" }
 de-manodermaus-android-junit5 = { module = "de.mannodermaus.junit5:android-test-core", version.ref = "mannodermaus_junit5" }
 de-manodermaus-android-junit5-runner = { module = "de.mannodermaus.junit5:android-test-runner", version.ref = "mannodermaus_junit5" }
-junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "jupiter" }
-junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "jupiter" }
+junit-bom = { module = "org.junit:junit-bom", version="5.12.0" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter"}
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine" }
+junit-jupiter-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCore" }
 logback-android = { module = "com.github.tony19:logback-android", version.ref = "logback-android" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback-classic" }
@@ -47,6 +49,7 @@ android-test = ["junit-jupiter-api", "androidx_test_runner", "androidx_test_moni
 androidx-lifecycle = ["androidx_lifecycle_viewmodel_ktx", "androidx_lifecycle_viewmodel_compose", "androidx_lifecycle_runtime_compose"]
 compose = ["compose-activity", "compose-ui", "compose-material3" ]
 unit-test = ["junit-jupiter-api", "junit-jupiter", "mockk"]
+test-runtime = ["junit-jupiter-engine", "junit-jupiter-platform-launcher"]
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

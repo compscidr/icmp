@@ -39,9 +39,11 @@ dependencies {
     api(libs.kotlinx.coroutines.core)
     api(libs.slf4j.api)
 
+    testImplementation(platform(libs.junit.bom))
     testImplementation(libs.bundles.unit.test)
     testImplementation(libs.logback.classic)
     testImplementation(libs.packetdumper)
+    testRuntimeOnly(libs.bundles.test.runtime)
 }
 
 tasks.withType<Test>().configureEach {
