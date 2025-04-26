@@ -20,11 +20,12 @@ object IcmpLinux : Icmp() {
                 file.writeBytes(bytes)
                 System.load(file.absolutePath)
             } else {
-                logger.error("Failed to load icmp library: libicmp.so not found")
+                logger.warn("Failed to load icmp library: libicmp.so not found, falling back to lib path")
                 // fall back to trying to read from the library path
                 // (this is used for the unit tests because they don't use the jar like things
                 // consuming this library will)
                 System.loadLibrary("icmp")
+                logger.info("Loaded icmp library from system library path")
             }
         } catch (e: UnsatisfiedLinkError) {
             logger.error("Failed to load icmp library: ${e.message}")

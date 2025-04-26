@@ -105,11 +105,11 @@ dependencies {
 // and: https://github.com/GradleUp/nmcp
 nmcp {
     val props = project.properties
-    publishAllPublications {
+    centralPortal {
         username = props["centralPortalToken"] as String? ?: ""
         password = props["centralPortalPassword"] as String? ?: ""
         // or if you want to publish automatically
-        publicationType = "AUTOMATIC"
+        publishingType = "AUTOMATIC"
     }
 }
 

@@ -5,6 +5,7 @@ import com.jasonernst.icmp.common.v6.IcmpV6EchoPacket
 import com.jasonernst.icmp.common.v6.IcmpV6Header
 import com.jasonernst.packetdumper.stringdumper.StringPacketDumper
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -99,9 +100,15 @@ abstract class Icmp {
         sequence: UShort = 0u,
         data: ByteArray = ByteArray(0),
     ): com.jasonernst.icmp.common.PingResult {
-        val inetAddress = resolveInetAddressWithTimeout(host, resolveTimeoutMS)
-        logger.debug("Resolved $host to ${inetAddress.hostAddress}")
-        return ping(inetAddress, pingTimeoutMS, id, sequence, data)
+        try {
+            val inetAddress = resolveInetAddressWithTimeout(host, resolveTimeoutMS)
+            logger.debug("Resolved $host to ${inetAddress.hostAddress}")
+            return ping(inetAddress, pingTimeoutMS, id, sequence, data)
+        } catch (e: TimeoutCancellationException) {
+            logger.error("Timeout resolving host: $host")
+            return com.jasonernst.icmp.common.PingResult
+                .Failed(e.message ?: "Timeout resolving host: $host")
+        }
     }
 
     /**
