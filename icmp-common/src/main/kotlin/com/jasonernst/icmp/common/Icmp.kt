@@ -99,9 +99,14 @@ abstract class Icmp {
         sequence: UShort = 0u,
         data: ByteArray = ByteArray(0),
     ): com.jasonernst.icmp.common.PingResult {
-        val inetAddress = resolveInetAddressWithTimeout(host, resolveTimeoutMS)
-        logger.debug("Resolved $host to ${inetAddress.hostAddress}")
-        return ping(inetAddress, pingTimeoutMS, id, sequence, data)
+        try {
+            val inetAddress = resolveInetAddressWithTimeout(host, resolveTimeoutMS)
+            logger.debug("Resolved $host to ${inetAddress.hostAddress}")
+            return ping(inetAddress, pingTimeoutMS, id, sequence, data)
+        } catch (e: Exception) {
+            return com.jasonernst.icmp.common.PingResult
+                .Failed(e.message ?: "Failed to resolve $host")
+        }
     }
 
     /**
