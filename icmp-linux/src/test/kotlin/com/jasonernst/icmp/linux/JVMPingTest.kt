@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.net.InetAddress
 import java.net.UnknownHostException
+import org.slf4j.LoggerFactory
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -15,6 +16,7 @@ import java.net.UnknownHostException
  * See [testing documentation](http://d.android.com/tools/testing).
  */
 class JVMPingTest {
+    private val logger = LoggerFactory.getLogger(javaClass)
     private val icmp = IcmpLinux
 
     companion object {
@@ -63,8 +65,9 @@ class JVMPingTest {
     @Test fun pingTimeout() {
         runBlocking {
             // first do a ping with a normal timeout to make sure the host works
-            var result = icmp.ping("www.gov.za", pingTimeoutMS = 2000)
+            var result = icmp.ping("www.gov.za", pingTimeoutMS = 5000)
             assertTrue(result is PingResult.Success)
+            logger.debug("Long timeout ping result: $result")
 
             // now do a ping with a 1ms timeout to make sure it fails
             result = icmp.ping("www.gov.za", pingTimeoutMS = 1)
