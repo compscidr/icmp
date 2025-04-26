@@ -77,7 +77,7 @@ class AndroidPingTest {
         runBlocking {
             // do a resolution to a host we haven't used yet so we don't get a cache hit
             val result = icmp.ping("jasonernst.com", resolveTimeoutMS = 1)
-            assertTrue(host is PingResult.Failed)
+            assertTrue(result is PingResult.Failed)
         }
     }
 
