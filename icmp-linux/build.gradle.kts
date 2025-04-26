@@ -78,7 +78,7 @@ nmcp {
         username = props["centralPortalToken"] as String? ?: ""
         password = props["centralPortalPassword"] as String? ?: ""
         // or if you want to publish automatically
-        publicationType = "AUTOMATIC"
+        publishingType = "AUTOMATIC"
     }
 }
 
