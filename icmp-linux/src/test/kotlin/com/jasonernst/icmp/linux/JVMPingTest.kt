@@ -1,7 +1,6 @@
 package com.jasonernst.icmp.linux
 
 import com.jasonernst.icmp.common.PingResult
-import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -77,10 +76,9 @@ class JVMPingTest {
 
     @Test fun pingDnsTimeout() {
         runBlocking {
-            assertThrows<TimeoutCancellationException> {
-                // do a request to a host we haven't resolved before so we get a cache miss
-                icmp.ping("www.yahoo.com", resolveTimeoutMS = 1)
-            }
+            // do a request to a host we haven't resolved before so we get a cache miss
+            val host = icmp.ping("www.yahoo.com", resolveTimeoutMS = 1)
+            assertTrue(host is PingResult.Failed)
         }
     }
 
