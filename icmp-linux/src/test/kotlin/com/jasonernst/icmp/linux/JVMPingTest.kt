@@ -6,9 +6,9 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.slf4j.LoggerFactory
 import java.net.InetAddress
 import java.net.UnknownHostException
-import org.slf4j.LoggerFactory
 
 /**
  * Example local unit test, which will execute on the development machine (host).
