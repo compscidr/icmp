@@ -31,7 +31,7 @@ compose-ui = { module = "androidx.compose.ui:ui" }
 compose-material3 = { module = "androidx.compose.material3:material3" }
 de-manodermaus-android-junit5 = { module = "de.mannodermaus.junit5:android-test-core", version.ref = "mannodermaus_junit5" }
 de-manodermaus-android-junit5-runner = { module = "de.mannodermaus.junit5:android-test-runner", version.ref = "mannodermaus_junit5" }
-junit-bom = { module = "org.junit:junit-bom", version="5.12.2" }
+junit-bom = { module = "org.junit:junit-bom", version="5.13.0" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter"}
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api" }
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine" }
