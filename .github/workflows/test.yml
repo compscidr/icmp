@@ -19,8 +19,10 @@ jobs:
           sudo sysctl -w net.ipv6.conf.all.disable_ipv6=0
           sudo sysctl -w net.ipv6.conf.default.disable_ipv6=0
           sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=0
-          # Verify IPv6 is working
+          # Verify IPv6 is working on host
+          echo "Testing IPv6 on host:"
           ping6 -c 1 ::1
+          ip -6 addr show lo
           
       - name: set up JDK
         uses: actions/setup-java@v4.7.1
@@ -49,22 +51,31 @@ jobs:
           disable-animations: true
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -netdelay none -netspeed full
           script: |
-            # Wait for device and enable IPv6
+            # Wait for device to be ready
             adb wait-for-device
-            adb shell "sysctl -w net.ipv6.conf.all.disable_ipv6=0" || true
-            adb shell "sysctl -w net.ipv6.conf.default.disable_ipv6=0" || true
-            adb shell "sysctl -w net.ipv6.conf.lo.disable_ipv6=0" || true
+            echo "Device is ready, configuring IPv6..."
             
-            # Verify IPv6 connectivity in emulator
+            # Try multiple approaches to enable IPv6 in emulator
+            adb shell "sysctl -w net.ipv6.conf.all.disable_ipv6=0" 2>/dev/null || echo "sysctl method failed"
+            adb shell "echo 0 > /proc/sys/net/ipv6/conf/all/disable_ipv6" 2>/dev/null || echo "proc write method failed" 
+            adb shell "echo 0 > /proc/sys/net/ipv6/conf/default/disable_ipv6" 2>/dev/null || true
+            adb shell "echo 0 > /proc/sys/net/ipv6/conf/lo/disable_ipv6" 2>/dev/null || true
+            
+            # Show current IPv6 status
+            echo "IPv6 configuration in emulator:"
+            adb shell "cat /proc/sys/net/ipv6/conf/all/disable_ipv6" 2>/dev/null || echo "Cannot read IPv6 config"
+            adb shell "ip -6 addr show lo" 2>/dev/null || echo "Cannot show IPv6 addresses"
+            
+            # Test IPv6 connectivity
             echo "Testing IPv6 connectivity in emulator..."
-            adb shell "ping6 -c 1 ::1" || echo "IPv6 ping failed, but continuing..."
-            
-            # Show network configuration for debugging
-            echo "Network configuration in emulator:"
-            adb shell "ip -6 addr show" || true
-            adb shell "cat /proc/net/if_inet6" || true
+            if adb shell "ping6 -c 1 ::1" 2>/dev/null; then
+              echo "IPv6 ping successful!"
+            else
+              echo "IPv6 ping failed, but tests may still work (ICMP sockets work differently)"
+            fi
             
             # Run the Android instrumented tests
+            echo "Running Android instrumented tests..."
             ./gradlew connectedCheck
       - name: Upload ICMP Common Unit Tests Report to CodeCov
         # https://github.com/codecov/codecov-action
