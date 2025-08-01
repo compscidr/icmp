@@ -9,12 +9,19 @@ on:
 jobs:
   build:
     name: Build and Test
-    # if you fork this repo, you should change this to ubuntu-latest
-    # you should also disable ipv6 tests, and the android tests
-    # (the self-hosted tests have ipv6 on the host and a phone attached to the runner)
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
+      # Enable IPv6 on the runner
+      - name: Enable IPv6
+        run: |
+          sudo sysctl -w net.ipv6.conf.all.disable_ipv6=0
+          sudo sysctl -w net.ipv6.conf.default.disable_ipv6=0
+          sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=0
+          # Verify IPv6 is working
+          ping6 -c 1 ::1
+          
       - name: set up JDK
         uses: actions/setup-java@v4.7.1
         with:
@@ -33,8 +40,32 @@ jobs:
         run: ./gradlew assemble          # we don't use build because that will run the tests, we want that separate
       - name: JVM Unit tests
         run: ./gradlew check
-      - name: Android Instrumented tests # disable if you don't have a phone attached to the runner
-        run: ./gradlew connectedCheck
+      - name: Android Instrumented tests with emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -netdelay none -netspeed full
+          script: |
+            # Wait for device and enable IPv6
+            adb wait-for-device
+            adb shell "sysctl -w net.ipv6.conf.all.disable_ipv6=0" || true
+            adb shell "sysctl -w net.ipv6.conf.default.disable_ipv6=0" || true
+            adb shell "sysctl -w net.ipv6.conf.lo.disable_ipv6=0" || true
+            
+            # Verify IPv6 connectivity in emulator
+            echo "Testing IPv6 connectivity in emulator..."
+            adb shell "ping6 -c 1 ::1" || echo "IPv6 ping failed, but continuing..."
+            
+            # Show network configuration for debugging
+            echo "Network configuration in emulator:"
+            adb shell "ip -6 addr show" || true
+            adb shell "cat /proc/net/if_inet6" || true
+            
+            # Run the Android instrumented tests
+            ./gradlew connectedCheck
       - name: Upload ICMP Common Unit Tests Report to CodeCov
         # https://github.com/codecov/codecov-action
         uses: codecov/codecov-action@v5
