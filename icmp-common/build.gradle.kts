@@ -32,6 +32,12 @@ tasks.jacocoTestReport {
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
     finalizedBy("jacocoTestReport")
+    // Add JVM args to help with MockK initialization in CI environments
+    jvmArgs(
+        "-Dnet.bytebuddy.experimental=true",
+        "--add-opens", "java.base/java.lang=ALL-UNNAMED",
+        "--add-opens", "java.base/java.util=ALL-UNNAMED"
+    )
 }
 
 dependencies {
