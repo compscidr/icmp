@@ -64,13 +64,12 @@ class JVMPingTest {
     @Test fun pingTimeout() {
         runBlocking {
             // first do a ping with a normal timeout to make sure the host works
-            // use localhost instead of external host to avoid firewall issues in CI
-            var result = icmp.ping("localhost", pingTimeoutMS = 5000)
+            var result = icmp.ping("www.gov.za", pingTimeoutMS = 5000)
             assertTrue(result is PingResult.Success)
             logger.debug("Long timeout ping result: $result")
 
             // now do a ping with a 1ms timeout to make sure it fails
-            result = icmp.ping("localhost", pingTimeoutMS = 1)
+            result = icmp.ping("www.gov.za", pingTimeoutMS = 1)
             assertTrue(result is PingResult.Failed)
         }
     }
