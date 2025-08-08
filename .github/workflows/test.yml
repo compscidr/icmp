@@ -50,17 +50,7 @@ jobs:
         with:
           timeout_minutes: 20
           max_attempts: 3
-          command: |
-            # Grant CAP_NET_RAW capability to Java for ICMP socket creation
-            echo "Granting CAP_NET_RAW capability to Java for ICMP tests..."
-            sudo setcap cap_net_raw+ep $(which java) || echo "Warning: Failed to grant CAP_NET_RAW capability, ICMP tests may fail"
-            
-            # Verify capability was granted
-            echo "Java capabilities:"
-            getcap $(which java) || echo "No capabilities found"
-            
-            # Run the tests
-            ./gradlew check
+          command: ./gradlew check
       - name: Android Instrumented tests
         uses: reactivecircus/android-emulator-runner@v2
         with:

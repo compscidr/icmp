@@ -22,12 +22,9 @@ import java.nio.ByteBuffer
 class IcmpTest : Icmp() {
     var responsePacket: ByteBuffer? = null
 
-    private val mockIpv4Socket by lazy { mockk<FileDescriptor>(relaxed = true) }
-    private val mockIpv6Socket by lazy { mockk<FileDescriptor>(relaxed = true) }
+    override fun obtainSocketIpv4Socket(): FileDescriptor = mockk(relaxed = true)
 
-    override fun obtainSocketIpv4Socket(): FileDescriptor = mockIpv4Socket
-
-    override fun obtainSocketIpv6Socket(): FileDescriptor = mockIpv6Socket
+    override fun obtainSocketIpv6Socket(): FileDescriptor = mockk(relaxed = true)
 
     override fun setsockoptInt(
         fd: FileDescriptor,
