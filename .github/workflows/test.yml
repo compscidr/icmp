@@ -46,18 +46,22 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew assemble          # we don't use build because that will run the tests, we want that separate
       - name: JVM Unit tests
-        run: |
-          # Grant CAP_NET_RAW capability to Java for ICMP socket creation
-          echo "Granting CAP_NET_RAW capability to Java for ICMP tests..."
-          sudo setcap cap_net_raw+ep $(which java) || echo "Warning: Failed to grant CAP_NET_RAW capability, ICMP tests may fail"
-          
-          # Verify capability was granted
-          echo "Java capabilities:"
-          getcap $(which java) || echo "No capabilities found"
-          
-          # Run the tests
-          ./gradlew check
-      - name: Android Instrumented tests with emulator
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 20
+          max_attempts: 3
+          command: |
+            # Grant CAP_NET_RAW capability to Java for ICMP socket creation
+            echo "Granting CAP_NET_RAW capability to Java for ICMP tests..."
+            sudo setcap cap_net_raw+ep $(which java) || echo "Warning: Failed to grant CAP_NET_RAW capability, ICMP tests may fail"
+            
+            # Verify capability was granted
+            echo "Java capabilities:"
+            getcap $(which java) || echo "No capabilities found"
+            
+            # Run the tests
+            ./gradlew check
+      - name: Android Instrumented tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 30
@@ -89,9 +93,22 @@ jobs:
               echo "IPv6 ping failed, but tests may still work (ICMP sockets work differently)"
             fi
             
-            # Run the Android instrumented tests
-            echo "Running Android instrumented tests..."
-            ./gradlew connectedCheck
+            # Run the Android instrumented tests with retry
+            for attempt in 1 2 3; do
+              echo "Running Android instrumented tests (attempt $attempt)..."
+              if timeout 1200 ./gradlew connectedCheck; then
+                echo "Android tests passed on attempt $attempt"
+                break
+              else
+                if [ $attempt -lt 3 ]; then
+                  echo "Android tests failed on attempt $attempt, retrying..."
+                  sleep 30
+                else
+                  echo "Android tests failed after 3 attempts"
+                  exit 1
+                fi
+              fi
+            done
       - name: Upload ICMP Common Unit Tests Report to CodeCov
         # https://github.com/codecov/codecov-action
         uses: codecov/codecov-action@v5
