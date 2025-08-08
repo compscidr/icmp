@@ -6,6 +6,11 @@ on:
   pull_request:
     types: [ opened, synchronize ]
 
+# Prevent multiple workflows from running simultaneously for the same branch/PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     name: Build and Test
@@ -41,7 +46,17 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew assemble          # we don't use build because that will run the tests, we want that separate
       - name: JVM Unit tests
-        run: ./gradlew check
+        run: |
+          # Grant CAP_NET_RAW capability to Java for ICMP socket creation
+          echo "Granting CAP_NET_RAW capability to Java for ICMP tests..."
+          sudo setcap cap_net_raw+ep $(which java) || echo "Warning: Failed to grant CAP_NET_RAW capability, ICMP tests may fail"
+          
+          # Verify capability was granted
+          echo "Java capabilities:"
+          getcap $(which java) || echo "No capabilities found"
+          
+          # Run the tests
+          ./gradlew check
       - name: Android Instrumented tests with emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
