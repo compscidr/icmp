@@ -72,7 +72,7 @@ tasks.withType<KotlinCompile>().configureEach {
 
 // see: https://github.com/vanniktech/gradle-maven-publish-plugin/issues/747#issuecomment-2066762725
 // and: https://github.com/GradleUp/nmcp
-nmcp {
+nmcpAggregation {
     val props = project.properties
     centralPortal {
         username = props["centralPortalToken"] as String? ?: ""
