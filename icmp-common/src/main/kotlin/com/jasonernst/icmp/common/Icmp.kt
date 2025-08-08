@@ -21,7 +21,7 @@ import java.net.InetAddress
 import java.nio.ByteBuffer
 
 abstract class Icmp {
-    private val logger = LoggerFactory.getLogger(javaClass)
+    private val logger by lazy { LoggerFactory.getLogger(this::class.java) }
 
     companion object {
         const val ICMP_PORT = 7
