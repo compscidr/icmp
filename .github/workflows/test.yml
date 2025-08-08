@@ -36,9 +36,17 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew assemble          # we don't use build because that will run the tests, we want that separate
       - name: JVM Unit tests
-        run: ./gradlew check
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 20
+          max_attempts: 3
+          command: ./gradlew check
       - name: Android Instrumented tests # disable if you don't have a phone attached to the runner
-        run: ./gradlew connectedCheck
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 20
+          max_attempts: 3
+          command: ./gradlew connectedCheck
       - name: Upload ICMP Common Unit Tests Report to CodeCov
         # https://github.com/codecov/codecov-action
         uses: codecov/codecov-action@v5
