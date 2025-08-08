@@ -29,6 +29,13 @@ jobs:
           ping6 -c 1 ::1
           ip -6 addr show lo
           
+      # Enable unprivileged ICMP sockets for the tests
+      - name: Enable unprivileged ICMP sockets
+        run: |
+          echo "Current ping_group_range: $(cat /proc/sys/net/ipv4/ping_group_range)"
+          sudo sysctl -w net.ipv4.ping_group_range="0 65535"
+          echo "Updated ping_group_range: $(cat /proc/sys/net/ipv4/ping_group_range)"
+          
       - name: set up JDK
         uses: actions/setup-java@v4.7.1
         with:
