@@ -20,7 +20,7 @@ class JVMPingTest {
 
     companion object {
         // assumes this is run from within docker, or a machine with docker running
-        const val UNREACHABLE_IPV4 = "180.171.171.171"
+        const val UNREACHABLE_IPV4 = "169.254.0.10"
 
         // this should be the host machine if docker is running
         const val REACHABLE_IPV4 = "172.17.0.1"

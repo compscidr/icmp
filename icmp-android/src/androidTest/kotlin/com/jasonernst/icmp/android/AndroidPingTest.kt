@@ -20,7 +20,7 @@ class AndroidPingTest {
 
     companion object {
         // assumes this is unreachable from the android phone
-        const val UNREACHABLE_IPV4 = "180.171.171.171"
+        const val UNREACHABLE_IPV4 = "169.254.0.10"
 
         // should always be reachable
         const val REACHABLE_IPV4 = "127.0.0.1"

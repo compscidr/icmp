@@ -1,21 +1,21 @@
 [versions]
-agp = "8.10.1" # downgraded until https://issuetracker.google.com/issues/376437038 is fixed (this is newest the most up to date android studio supports that isn't broken)
-androidx_lifecycle = "2.9.1"
-androidx_test_runner = "1.6.2"
-androidx_test_monitor = "1.7.2"
+agp = "8.12.0" # downgraded until https://issuetracker.google.com/issues/376437038 is fixed (this is newest the most up to date android studio supports that isn't broken)
+androidx_lifecycle = "2.9.2"
+androidx_test_runner = "1.7.0"
+androidx_test_monitor = "1.8.0"
 androidx_test_ui_automator = "2.3.0"
-compose-bom = "2025.06.00"
+compose-bom = "2025.07.00"
 compose-activity = "1.10.1"
 dokka = "2.0.0"
-kotlin = "2.1.21"
-kotlinter = "5.1.1"
+kotlin = "2.2.0"
+kotlinter = "5.2.0"
 kotlinxCoroutinesCore = "1.10.2"
 logback-android = "3.0.0"
 logback-classic = "1.5.18"
-mannodermaus_junit5_plugin = "1.13.0.0"
+mannodermaus_junit5_plugin = "1.13.1.0"
 mannodermaus_junit5 = "1.8.0"
 material = "1.12.0"
-mockk = "1.14.2"
+mockk = "1.14.5"
 slf4jApi = "2.0.17"
 
 [libraries]
@@ -31,7 +31,7 @@ compose-ui = { module = "androidx.compose.ui:ui" }
 compose-material3 = { module = "androidx.compose.material3:material3" }
 de-manodermaus-android-junit5 = { module = "de.mannodermaus.junit5:android-test-core", version.ref = "mannodermaus_junit5" }
 de-manodermaus-android-junit5-runner = { module = "de.mannodermaus.junit5:android-test-runner", version.ref = "mannodermaus_junit5" }
-junit-bom = { module = "org.junit:junit-bom", version="5.13.1" }
+junit-bom = { module = "org.junit:junit-bom", version="5.13.4" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter"}
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api" }
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine" }
@@ -63,4 +63,4 @@ gradleup-nmcp = { id = "com.gradleup.nmcp", version = "0.1.5"}
 kotlinter = { id = "org.jmailen.kotlinter", version.ref = "kotlinter" }
 org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 org-jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-sonatype-maven-central = { id = "com.vanniktech.maven.publish", version = "0.32.0" }
+sonatype-maven-central = { id = "com.vanniktech.maven.publish", version = "0.34.0" }
