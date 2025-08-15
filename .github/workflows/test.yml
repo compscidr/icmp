@@ -18,7 +18,7 @@ jobs:
     # (the self-hosted tests have ipv6 on the host and a phone attached to the runner)
     runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: set up JDK
         uses: actions/setup-java@v4.7.1
         with:
