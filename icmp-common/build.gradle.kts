@@ -19,7 +19,7 @@ kotlin {
 }
 
 jacoco {
-    toolVersion = "0.8.13"
+    toolVersion = "0.8.14"
 }
 
 tasks.jacocoTestReport {
