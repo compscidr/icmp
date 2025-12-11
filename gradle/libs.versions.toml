@@ -15,7 +15,7 @@ logback-classic = "1.5.22"
 mannodermaus_junit5_plugin = "1.14.0.0"
 mannodermaus_junit5 = "1.9.0"
 material = "1.13.0"
-mockk = "1.14.6"
+mockk = "1.14.7"
 slf4jApi = "2.0.17"
 
 [libraries]
