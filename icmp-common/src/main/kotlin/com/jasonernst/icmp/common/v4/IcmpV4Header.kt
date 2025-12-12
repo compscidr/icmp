@@ -31,12 +31,15 @@ abstract class IcmpV4Header(
                 IcmpV4Type.ECHO_REPLY, IcmpV4Type.ECHO_REQUEST -> {
                     IcmpV4EchoPacket.fromStream(buffer, limit, newType, newChecksum, order)
                 }
+
                 IcmpV4Type.DESTINATION_UNREACHABLE -> {
                     IcmpV4DestinationUnreachablePacket.fromStream(buffer, limit, newCode, newChecksum, order)
                 }
+
                 IcmpV4Type.TIME_EXCEEDED -> {
                     IcmpV4TimeExceededPacket.fromStream(buffer, limit, newCode, newChecksum, order)
                 }
+
                 else -> {
                     throw PacketHeaderException("Unsupported ICMPv4 type")
                 }
