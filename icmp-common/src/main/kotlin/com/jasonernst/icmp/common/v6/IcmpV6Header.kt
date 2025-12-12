@@ -43,6 +43,7 @@ abstract class IcmpV6Header(
                 IcmpV6Type.ECHO_REPLY_V6, IcmpV6Type.ECHO_REQUEST_V6 -> {
                     IcmpV6EchoPacket.fromStream(sourceAddress, destinationAddress, buffer, limit, newType, newChecksum, order)
                 }
+
                 IcmpV6Type.DESTINATION_UNREACHABLE -> {
                     IcmpV6DestinationUnreachablePacket.fromStream(
                         sourceAddress,
@@ -54,18 +55,23 @@ abstract class IcmpV6Header(
                         order,
                     )
                 }
+
                 IcmpV6Type.TIME_EXCEEDED -> {
                     IcmpV6TimeExceededPacket.fromStream(sourceAddress, destinationAddress, buffer, limit, newCode, newChecksum, order)
                 }
+
                 IcmpV6Type.MULTICAST_LISTENER_DISCOVERY_V2 -> {
                     IcmpV6MulticastListenerDiscoveryV2.fromStream(sourceAddress, destinationAddress, buffer, limit, newChecksum, order)
                 }
+
                 IcmpV6Type.ROUTER_SOLICITATION_V6 -> {
                     IcmpV6RouterSolicitationPacket.fromStream(sourceAddress, destinationAddress, buffer, limit, newChecksum, order)
                 }
+
                 IcmpV6Type.ROUTER_ADVERTISEMENT_V6 -> {
                     IcmpV6RouterAdvertisementPacket.fromStream(sourceAddress, destinationAddress, buffer, limit, newChecksum, order)
                 }
+
                 else -> {
                     throw PacketHeaderException("Unsupported ICMPv6 type: $newType")
                 }
