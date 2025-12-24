@@ -48,9 +48,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
     tasks.withType<Test>().configureEach {
         useJUnitPlatform()
         configure<JacocoTaskExtension> {
@@ -82,6 +79,9 @@ tasks.withType(JacocoReport::class.java) {
 
 kotlin {
     jvmToolchain(17)
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
 }
 
 version = "0.0.0-SNAPSHOT"
