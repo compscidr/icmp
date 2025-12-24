@@ -63,13 +63,15 @@ class JVMPingTest {
 
     @Test fun pingTimeout() {
         runBlocking {
-            // first do a ping with a normal timeout to make sure the host works
-            var result = icmp.ping("www.gov.za", pingTimeoutMS = 5000)
+            // Use Cloudflare's 1.1.1.1 DNS - reliable, globally distributed, and predictable latency
+            // First do a ping with a normal timeout to make sure the host works
+            var result = icmp.ping("1.1.1.1", pingTimeoutMS = 5000)
             assertTrue(result is PingResult.Success)
             logger.debug("Long timeout ping result: $result")
 
-            // now do a ping with a 1ms timeout to make sure it fails
-            result = icmp.ping("www.gov.za", pingTimeoutMS = 1)
+            // Now do a ping with a 1ms timeout - this should always fail as 1ms is
+            // impossibly short for any real network round trip
+            result = icmp.ping("1.1.1.1", pingTimeoutMS = 1)
             assertTrue(result is PingResult.Failed)
         }
     }
