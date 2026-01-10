@@ -92,12 +92,6 @@ gitVersioning.apply {
     }
 }
 
-// Exclude JUnit 6 variants to avoid duplicate classes
-configurations.all {
-    exclude(group = "de.mannodermaus.junit5", module = "android-test-core-junit6")
-    exclude(group = "de.mannodermaus.junit5", module = "android-test-runner-junit6")
-}
-
 dependencies {
     api("com.jasonernst.icmp:icmp_common:$version")
     implementation(libs.logback.android)
