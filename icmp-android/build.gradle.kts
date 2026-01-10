@@ -65,9 +65,6 @@ android {
 
 junitPlatform {
     // this is for the non-android unit tests, only required with the mannodermaus plugin
-    instrumentationTests {
-        version.set("1.9.0")
-    }
     jacocoOptions {
         html.enabled = true
         xml.enabled = true
@@ -93,6 +90,12 @@ gitVersioning.apply {
         branch(".+") { version = "\${ref}-SNAPSHOT" }
         tag("v(?<version>.*)") { version = "\${ref.version}" }
     }
+}
+
+// Exclude JUnit 6 variants to avoid duplicate classes
+configurations.all {
+    exclude(group = "de.mannodermaus.junit5", module = "android-test-core-junit6")
+    exclude(group = "de.mannodermaus.junit5", module = "android-test-runner-junit6")
 }
 
 dependencies {
