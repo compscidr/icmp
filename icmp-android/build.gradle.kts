@@ -65,6 +65,9 @@ android {
 
 junitPlatform {
     // this is for the non-android unit tests, only required with the mannodermaus plugin
+    instrumentationTests {
+        version.set("1.9.0")
+    }
     jacocoOptions {
         html.enabled = true
         xml.enabled = true
@@ -97,6 +100,7 @@ dependencies {
     implementation(libs.logback.android)
 
     testImplementation(platform(libs.junit.bom))
+    androidTestImplementation(platform(libs.junit.bom))
     androidTestImplementation(libs.bundles.android.test)
     androidTestRuntimeOnly(libs.de.manodermaus.android.junit5.runner)
 }
