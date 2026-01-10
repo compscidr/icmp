@@ -62,6 +62,7 @@ gitVersioning.apply {
 // and: https://github.com/GradleUp/nmcp
 nmcpAggregation {
     val props = project.properties
+    allowEmptyAggregation = true
     centralPortal {
         username = props["centralPortalToken"] as String? ?: ""
         password = props["centralPortalPassword"] as String? ?: ""
