@@ -17,6 +17,8 @@ jobs:
     # you should also disable ipv6 tests, and the android tests
     # (the self-hosted tests have ipv6 on the host and a phone attached to the runner)
     runs-on: self-hosted
+    env:
+      HAS_OP_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v6
       - name: set up JDK
@@ -30,7 +32,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Load Wi-Fi credentials from 1Password
-        if: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN != '' }}
+        if: env.HAS_OP_TOKEN == 'true'
         uses: 1password/load-secrets-action@v3
         with:
           export-env: true
@@ -39,11 +41,11 @@ jobs:
           WIFI_SSID: op://Infrastructure/Wi-Fi/username
           WIFI_PASSWORD: op://Infrastructure/Wi-Fi/password
       - name: Connect phone to Wi-Fi
-        if: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN != '' }}
+        if: env.HAS_OP_TOKEN == 'true'
         run: |
           adb shell cmd wifi connect-network "$WIFI_SSID" wpa2 "$WIFI_PASSWORD"
       - name: Clear Wi-Fi password from environment
-        if: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN != '' }}
+        if: env.HAS_OP_TOKEN == 'true'
         run: echo "WIFI_PASSWORD=" >> "$GITHUB_ENV"
       - name: Build and Publish the Common Library to the local Maven repository
         run: ./gradlew :icmp-common:publishToMavenLocal
