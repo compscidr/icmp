@@ -36,7 +36,7 @@ jobs:
         env:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
           WIFI_SSID: op://Infrastructure/Wi-Fi/username
-          WIFI_PASSWORD: op://Infrastructure/Wi-Fi/credential
+          WIFI_PASSWORD: op://Infrastructure/Wi-Fi/password
       - name: Connect phone to Wi-Fi
         run: adb shell cmd wifi connect-network "$WIFI_SSID" wpa2 "$WIFI_PASSWORD"
       - name: Build and Publish the Common Library to the local Maven repository
