@@ -1,5 +1,4 @@
 plugins {
-    alias(libs.plugins.org.jetbrains.kotlin.android)
     alias(libs.plugins.de.mannodermaus.android.junit5)
     alias(libs.plugins.android.library)
     alias(libs.plugins.git.version) // https://stackoverflow.com/a/71212144
@@ -75,13 +74,6 @@ junitPlatform {
 tasks.withType(JacocoReport::class.java) {
     executionData(fileTree("build/outputs/code_coverage/debugAndroidTest/connected/").include("**/*.ec"))
     executionData(fileTree("build/outputs/unit_test_code_coverage/debugUnitTest/").include("**/*.exec"))
-}
-
-kotlin {
-    jvmToolchain(17)
-    compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-    }
 }
 
 version = "0.0.0-SNAPSHOT"

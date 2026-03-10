@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.org.jetbrains.kotlin.android)
     alias(libs.plugins.git.version) // https://stackoverflow.com/a/71212144
     alias(libs.plugins.compose.compiler)
 }
@@ -46,12 +45,6 @@ android {
     }
     buildFeatures {
         viewBinding = true
-    }
-}
-
-kotlin {
-    compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
 
