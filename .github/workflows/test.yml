@@ -30,6 +30,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Load Wi-Fi credentials from 1Password
+        if: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN != '' }}
         uses: 1password/load-secrets-action@v3
         with:
           export-env: true
@@ -38,7 +39,12 @@ jobs:
           WIFI_SSID: op://Infrastructure/Wi-Fi/username
           WIFI_PASSWORD: op://Infrastructure/Wi-Fi/password
       - name: Connect phone to Wi-Fi
-        run: adb shell cmd wifi connect-network "$WIFI_SSID" wpa2 "$WIFI_PASSWORD"
+        if: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN != '' }}
+        run: |
+          adb shell cmd wifi connect-network "$WIFI_SSID" wpa2 "$WIFI_PASSWORD"
+      - name: Clear Wi-Fi password from environment
+        if: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN != '' }}
+        run: echo "WIFI_PASSWORD=" >> "$GITHUB_ENV"
       - name: Build and Publish the Common Library to the local Maven repository
         run: ./gradlew :icmp-common:publishToMavenLocal
       - name: Build and Publish the Android and Linux Libraries to the local Maven repository
@@ -80,4 +86,9 @@ jobs:
           files: ./icmp-android/build/reports/coverage/androidTest/debug/connected/report.xml
       - name: Disconnect phone from Wi-Fi
         if: always()
-        run: adb shell cmd wifi forget-network "$WIFI_SSID"
+        run: |
+          if [ -n "$WIFI_SSID" ]; then
+            adb shell cmd wifi forget-network "$WIFI_SSID"
+          else
+            echo "WIFI_SSID is not set; skipping Wi-Fi disconnect."
+          fi
