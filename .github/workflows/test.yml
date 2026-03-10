@@ -29,6 +29,16 @@ jobs:
         run: echo $HOST_NAME
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+      - name: Load Wi-Fi credentials from 1Password
+        uses: 1password/load-secrets-action@v3
+        with:
+          export-env: true
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+          WIFI_SSID: op://Infrastructure/Wi-Fi/username
+          WIFI_PASSWORD: op://Infrastructure/Wi-Fi/credential
+      - name: Connect phone to Wi-Fi
+        run: adb shell cmd wifi connect-network "$WIFI_SSID" wpa2 "$WIFI_PASSWORD"
       - name: Build and Publish the Common Library to the local Maven repository
         run: ./gradlew :icmp-common:publishToMavenLocal
       - name: Build and Publish the Android and Linux Libraries to the local Maven repository
@@ -68,3 +78,6 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: instrumentedtests
           files: ./icmp-android/build/reports/coverage/androidTest/debug/connected/report.xml
+      - name: Disconnect phone from Wi-Fi
+        if: always()
+        run: adb shell cmd wifi forget-network "$WIFI_SSID"
