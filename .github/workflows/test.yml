@@ -17,6 +17,8 @@ jobs:
     # you should also disable ipv6 tests, and the android tests
     # (the self-hosted tests have ipv6 on the host and a phone attached to the runner)
     runs-on: self-hosted
+    env:
+      HAS_OP_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v6
       - name: set up JDK
@@ -29,6 +31,22 @@ jobs:
         run: echo $HOST_NAME
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+      - name: Load Wi-Fi credentials from 1Password
+        if: env.HAS_OP_TOKEN == 'true'
+        uses: 1password/load-secrets-action@v3
+        with:
+          export-env: true
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+          WIFI_SSID: op://Infrastructure/Wi-Fi/username
+          WIFI_PASSWORD: op://Infrastructure/Wi-Fi/password
+      - name: Connect phone to Wi-Fi
+        if: env.HAS_OP_TOKEN == 'true'
+        run: |
+          adb shell cmd wifi connect-network "$WIFI_SSID" wpa2 "$WIFI_PASSWORD"
+      - name: Clear Wi-Fi password from environment
+        if: env.HAS_OP_TOKEN == 'true'
+        run: echo "WIFI_PASSWORD=" >> "$GITHUB_ENV"
       - name: Build and Publish the Common Library to the local Maven repository
         run: ./gradlew :icmp-common:publishToMavenLocal
       - name: Build and Publish the Android and Linux Libraries to the local Maven repository
@@ -68,3 +86,11 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: instrumentedtests
           files: ./icmp-android/build/reports/coverage/androidTest/debug/connected/report.xml
+      - name: Disconnect phone from Wi-Fi
+        if: always()
+        run: |
+          if [ -n "$WIFI_SSID" ]; then
+            adb shell cmd wifi forget-network "$WIFI_SSID"
+          else
+            echo "WIFI_SSID is not set; skipping Wi-Fi disconnect."
+          fi
