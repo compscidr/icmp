@@ -43,6 +43,19 @@ jobs:
           WIFI_PASSWORD: op://Infrastructure/Wi-Fi/password
           SAIR_API_KEY: op://Infrastructure/sair-api-key/credential
 
+      - name: Build and Publish the Common Library to the local Maven repository
+        run: ./gradlew :icmp-common:publishToMavenLocal
+      - name: Build and Publish the Android and Linux Libraries to the local Maven repository
+        run: ./gradlew :icmp-android:publishToMavenLocal :icmp-linux:publishToMavenLocal
+      - name: Build with Gradle
+        run: ./gradlew assemble          # we don't use build because that will run the tests, we want that separate
+      - name: JVM Unit tests
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 20
+          max_attempts: 3
+          command: ./gradlew check
+
       - name: Acquire device lock
         if: env.HAS_OP_TOKEN == 'true'
         run: |
@@ -61,18 +74,6 @@ jobs:
       - name: Clear Wi-Fi password from environment
         if: env.HAS_OP_TOKEN == 'true'
         run: echo "WIFI_PASSWORD=" >> "$GITHUB_ENV"
-      - name: Build and Publish the Common Library to the local Maven repository
-        run: ./gradlew :icmp-common:publishToMavenLocal
-      - name: Build and Publish the Android and Linux Libraries to the local Maven repository
-        run: ./gradlew :icmp-android:publishToMavenLocal :icmp-linux:publishToMavenLocal
-      - name: Build with Gradle
-        run: ./gradlew assemble          # we don't use build because that will run the tests, we want that separate
-      - name: JVM Unit tests
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 20
-          max_attempts: 3
-          command: ./gradlew check
 
       - name: Uninstall stale APKs
         if: env.HAS_OP_TOKEN == 'true'
