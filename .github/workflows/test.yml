@@ -19,7 +19,7 @@ jobs:
     runs-on: self-hosted
     env:
       HAS_OP_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN != '' }}
-      SAIR_ORCHESTRATOR_URL: http://sair-orchestrator:8081
+      SAIR_PROXY_URL: http://sair-adb-proxy:8550
     steps:
       - uses: actions/checkout@v6
       - name: set up JDK
@@ -50,8 +50,9 @@ jobs:
           ACQUIRE_OUTPUT=$(tools/sair-acquire)
           eval "$ACQUIRE_OUTPUT"
           echo "SAIR_LOCK_ID=${SAIR_LOCK_ID}" >> $GITHUB_ENV
-          echo "SAIR_HEARTBEAT_PID=${SAIR_HEARTBEAT_PID}" >> $GITHUB_ENV
           echo "SAIR_SERIALS=${SAIR_SERIALS}" >> $GITHUB_ENV
+          echo "SAIR_PROXY_URL=${SAIR_PROXY_URL}" >> $GITHUB_ENV
+          echo "ANDROID_ADB_SERVER_PORT=${ANDROID_ADB_SERVER_PORT}" >> $GITHUB_ENV
 
       - name: Connect phone to Wi-Fi
         if: env.HAS_OP_TOKEN == 'true'
@@ -77,8 +78,8 @@ jobs:
         if: env.HAS_OP_TOKEN == 'true'
         run: |
           adb devices | grep -w device | awk '{print $1}' | while read serial; do
-            adb -s "$serial" uninstall com.jasonernst.icmp_lib || true
-            adb -s "$serial" uninstall com.jasonernst.icmp_lib.test || true
+            adb -s "$serial" uninstall com.jasonernst.icmp_lib 2>&1 | grep -v "DELETE_FAILED_INTERNAL_ERROR" || true
+            adb -s "$serial" uninstall com.jasonernst.icmp_lib.test 2>&1 | grep -v "DELETE_FAILED_INTERNAL_ERROR" || true
           done
 
       - name: Android Instrumented tests # disable if you don't have a phone attached to the runner

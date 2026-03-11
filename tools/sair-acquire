@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-# sair-acquire — Acquire a device lock from the SAIR orchestrator.
+# sair-acquire — Acquire a device lock via the SAIR ADB proxy.
+#
+# The proxy handles all orchestrator communication and opens a scoped
+# ADB port that only exposes the locked devices.
 #
 # Blocks until the requested devices are available, then prints
 # environment variables to stdout for eval.
@@ -10,20 +13,21 @@
 #   eval $(sair-acquire --serial DEVICE_A,DEVICE_B)  # lock multiple devices
 #
 # Environment variables:
-#   SAIR_ORCHESTRATOR_URL  Orchestrator dashboard URL (default: http://localhost:8081)
-#   SAIR_API_KEY           API key for authentication (default: dev-key-123)
+#   SAIR_PROXY_URL   Proxy HTTP API URL (default: http://localhost:8550)
+#   SAIR_API_KEY     API key for authentication (default: dev-key-123)
 #
 # After eval, these are exported:
-#   SAIR_LOCK_ID           Lock ID for releasing later
-#   ANDROID_SERIAL         First acquired device serial
-#   SAIR_SERIALS           Comma-separated list of all acquired serials
+#   SAIR_LOCK_ID              Lock ID for releasing later
+#   SAIR_SERIALS              Comma-separated list of all acquired serials
+#   SAIR_PROXY_URL            Proxy URL (for sair-release)
+#   ANDROID_ADB_SERVER_PORT   Scoped ADB port (stock adb binary reads this)
+#   ANDROID_SERIAL            First serial (only when single device acquired)
 #
 set -euo pipefail
 
-ORCHESTRATOR_URL="${SAIR_ORCHESTRATOR_URL:-http://localhost:8081}"
+PROXY_URL="${SAIR_PROXY_URL:-http://localhost:8550}"
 API_KEY="${SAIR_API_KEY:-dev-key-123}"
 SERIAL=""
-HEARTBEAT_INTERVAL=60
 
 # Parse flags
 while [[ $# -gt 0 ]]; do
@@ -33,28 +37,23 @@ while [[ $# -gt 0 ]]; do
             shift 2
             ;;
         --url)
-            ORCHESTRATOR_URL="$2"
+            PROXY_URL="$2"
             shift 2
             ;;
         --api-key)
             API_KEY="$2"
             shift 2
             ;;
-        --heartbeat-interval)
-            HEARTBEAT_INTERVAL="$2"
-            shift 2
-            ;;
         --help|-h)
             echo "Usage: eval \$(sair-acquire [--serial SERIAL[,SERIAL...]] [--url URL] [--api-key KEY])" >&2
             echo "" >&2
-            echo "Acquires a device lock from the SAIR orchestrator." >&2
+            echo "Acquires a device lock via the SAIR ADB proxy." >&2
             echo "Blocks until devices are available." >&2
             echo "" >&2
             echo "Options:" >&2
             echo "  --serial SERIAL   Specific device(s) to lock (comma-separated, default: all)" >&2
-            echo "  --url URL         Orchestrator URL (default: \$SAIR_ORCHESTRATOR_URL or http://localhost:8081)" >&2
+            echo "  --url URL         Proxy API URL (default: \$SAIR_PROXY_URL or http://localhost:8550)" >&2
             echo "  --api-key KEY     API key (default: \$SAIR_API_KEY or dev-key-123)" >&2
-            echo "  --heartbeat-interval SECS  Heartbeat interval (default: 60)" >&2
             exit 0
             ;;
         *)
@@ -65,25 +64,23 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Build acquire URL
-ACQUIRE_URL="${ORCHESTRATOR_URL}/locks/acquire"
-if [[ -n "$SERIAL" ]]; then
-    ACQUIRE_URL="${ACQUIRE_URL}?serial=${SERIAL}"
-fi
+ACQUIRE_URL="${PROXY_URL}/acquire"
 
-echo "sair-acquire: requesting lock from ${ORCHESTRATOR_URL}..." >&2
+echo "sair-acquire: requesting lock from proxy at ${PROXY_URL}..." >&2
 if [[ -n "$SERIAL" ]]; then
     echo "sair-acquire: devices: ${SERIAL}" >&2
 else
     echo "sair-acquire: devices: all" >&2
 fi
 
-# POST /locks/acquire (blocks until available)
-# Capture both body and HTTP status code for proper error reporting
-RESPONSE=$(curl -s -X POST \
-    -H "x-api-key: ${API_KEY}" \
-    -w '\n%{http_code}' \
-    "${ACQUIRE_URL}") || {
-    echo "sair-acquire: ERROR: failed to contact orchestrator" >&2
+# POST /acquire (blocks until available)
+# Use --data-urlencode to safely encode serial (may contain ':' for TCP devices)
+CURL_ARGS=(-s -X POST -H "x-api-key: ${API_KEY}" -w '\n%{http_code}')
+if [[ -n "$SERIAL" ]]; then
+    CURL_ARGS+=(-G --data-urlencode "serial=${SERIAL}")
+fi
+RESPONSE=$(curl "${CURL_ARGS[@]}" "${ACQUIRE_URL}") || {
+    echo "sair-acquire: ERROR: failed to contact proxy" >&2
     exit 1
 }
 
@@ -97,10 +94,10 @@ if [[ "$HTTP_STATUS" -lt 200 || "$HTTP_STATUS" -ge 300 ]]; then
     exit 1
 fi
 
-# Parse JSON response (simple extraction without jq dependency)
-# Expected format: {"lock_id":"...","serials":["...", "..."]}
+# Parse JSON response: {"lock_id":"...","serials":[...],"port":NNN}
 LOCK_ID=$(echo "$BODY" | grep -o '"lock_id":"[^"]*"' | head -1 | cut -d'"' -f4)
 SERIALS=$(echo "$BODY" | grep -o '"serials":\[[^]]*\]' | head -1 | tr -d '[]"' | sed 's/serials://g')
+SCOPED_PORT=$(echo "$BODY" | grep -o '"port":[0-9]*' | head -1 | cut -d':' -f2)
 FIRST_SERIAL=$(echo "$SERIALS" | cut -d',' -f1)
 
 if [[ -z "$LOCK_ID" ]]; then
@@ -108,26 +105,21 @@ if [[ -z "$LOCK_ID" ]]; then
     exit 1
 fi
 
+if [[ -z "$SCOPED_PORT" ]]; then
+    echo "sair-acquire: ERROR: no port in response: ${BODY}" >&2
+    exit 1
+fi
+
 echo "sair-acquire: acquired lock ${LOCK_ID}" >&2
 echo "sair-acquire: devices: ${SERIALS}" >&2
-
-# Start background heartbeat process (survives across CI steps)
-nohup bash -c "
-    while true; do
-        sleep $HEARTBEAT_INTERVAL
-        curl -s -f -X POST \
-            -H \"x-api-key: ${API_KEY}\" \
-            \"${ORCHESTRATOR_URL}/locks/heartbeat?lock_id=${LOCK_ID}\" >/dev/null 2>&1 || exit 0
-    done
-" >/dev/null 2>&1 &
-HEARTBEAT_PID=$!
-disown "$HEARTBEAT_PID" 2>/dev/null || true
+echo "sair-acquire: scoped ADB port: ${SCOPED_PORT}" >&2
 
 # Output eval-able environment variables (shell-escaped to prevent injection)
+# Heartbeats are managed by the proxy — no background process needed.
 echo "export SAIR_LOCK_ID=$(printf '%q' "$LOCK_ID")"
-echo "export SAIR_HEARTBEAT_PID=$(printf '%q' "$HEARTBEAT_PID")"
 echo "export SAIR_SERIALS=$(printf '%q' "$SERIALS")"
-echo "export SAIR_ORCHESTRATOR_URL=$(printf '%q' "$ORCHESTRATOR_URL")"
+echo "export SAIR_PROXY_URL=$(printf '%q' "$PROXY_URL")"
+echo "export ANDROID_ADB_SERVER_PORT=$(printf '%q' "$SCOPED_PORT")"
 # Only set ANDROID_SERIAL when a single device was requested, so that
 # multi-device workflows (e.g. connectedCheck) can target all devices.
 SERIAL_COUNT=$(echo "$SERIALS" | tr ',' '\n' | wc -l)
