@@ -19,6 +19,7 @@ jobs:
     runs-on: self-hosted
     env:
       HAS_OP_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN != '' }}
+      SAIR_PROXY_URL: http://sair-adb-proxy:8550
     steps:
       - uses: actions/checkout@v6
       - name: set up JDK
@@ -31,7 +32,7 @@ jobs:
         run: echo $HOST_NAME
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      - name: Load Wi-Fi credentials from 1Password
+      - name: Load secrets from 1Password
         if: env.HAS_OP_TOKEN == 'true'
         uses: 1password/load-secrets-action@v3
         with:
@@ -40,13 +41,8 @@ jobs:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
           WIFI_SSID: op://Infrastructure/Wi-Fi/username
           WIFI_PASSWORD: op://Infrastructure/Wi-Fi/password
-      - name: Connect phone to Wi-Fi
-        if: env.HAS_OP_TOKEN == 'true'
-        run: |
-          adb shell cmd wifi connect-network "$WIFI_SSID" wpa2 "$WIFI_PASSWORD"
-      - name: Clear Wi-Fi password from environment
-        if: env.HAS_OP_TOKEN == 'true'
-        run: echo "WIFI_PASSWORD=" >> "$GITHUB_ENV"
+          SAIR_API_KEY: op://Infrastructure/sair-api-key/credential
+
       - name: Build and Publish the Common Library to the local Maven repository
         run: ./gradlew :icmp-common:publishToMavenLocal
       - name: Build and Publish the Android and Linux Libraries to the local Maven repository
@@ -59,12 +55,41 @@ jobs:
           timeout_minutes: 20
           max_attempts: 3
           command: ./gradlew check
+
+      - name: Acquire device lock
+        if: env.HAS_OP_TOKEN == 'true'
+        run: |
+          chmod +x tools/sair-acquire tools/sair-release
+          ACQUIRE_OUTPUT=$(tools/sair-acquire)
+          eval "$ACQUIRE_OUTPUT"
+          echo "SAIR_LOCK_ID=${SAIR_LOCK_ID}" >> $GITHUB_ENV
+          echo "SAIR_SERIALS=${SAIR_SERIALS}" >> $GITHUB_ENV
+          echo "SAIR_PROXY_URL=${SAIR_PROXY_URL}" >> $GITHUB_ENV
+          echo "ANDROID_ADB_SERVER_PORT=${ANDROID_ADB_SERVER_PORT}" >> $GITHUB_ENV
+
+      - name: Connect phone to Wi-Fi
+        if: env.HAS_OP_TOKEN == 'true'
+        run: |
+          adb shell cmd wifi connect-network "$WIFI_SSID" wpa2 "$WIFI_PASSWORD"
+      - name: Clear Wi-Fi password from environment
+        if: env.HAS_OP_TOKEN == 'true'
+        run: echo "WIFI_PASSWORD=" >> "$GITHUB_ENV"
+
+      - name: Uninstall stale APKs
+        if: env.HAS_OP_TOKEN == 'true'
+        run: |
+          adb devices | grep -w device | awk '{print $1}' | while read serial; do
+            adb -s "$serial" uninstall com.jasonernst.icmp_lib 2>&1 | grep -v "DELETE_FAILED_INTERNAL_ERROR" || true
+            adb -s "$serial" uninstall com.jasonernst.icmp_lib.test 2>&1 | grep -v "DELETE_FAILED_INTERNAL_ERROR" || true
+          done
+
       - name: Android Instrumented tests # disable if you don't have a phone attached to the runner
         uses: nick-fields/retry@v3
         with:
           timeout_minutes: 20
           max_attempts: 3
           command: ./gradlew connectedCheck
+
       - name: Upload ICMP Common Unit Tests Report to CodeCov
         # https://github.com/codecov/codecov-action
         uses: codecov/codecov-action@v5
@@ -94,3 +119,6 @@ jobs:
           else
             echo "WIFI_SSID is not set; skipping Wi-Fi disconnect."
           fi
+      - name: Release device lock
+        if: always() && env.HAS_OP_TOKEN == 'true'
+        run: tools/sair-release

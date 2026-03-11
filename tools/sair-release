@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+# sair-release — Release a device lock via the SAIR ADB proxy.
+#
+# The proxy closes the scoped ADB port and releases the lock on the
+# orchestrator.
+#
+# Usage:
+#   sair-release                           # uses $SAIR_LOCK_ID from environment
+#   sair-release --lock-id <lock-id>       # explicit lock ID
+#
+# Environment variables (set by sair-acquire):
+#   SAIR_LOCK_ID     Lock ID to release
+#   SAIR_PROXY_URL   Proxy HTTP API URL
+#   SAIR_API_KEY     API key for authentication
+#
+set -euo pipefail
+
+PROXY_URL="${SAIR_PROXY_URL:-http://localhost:8550}"
+API_KEY="${SAIR_API_KEY:-dev-key-123}"
+LOCK_ID="${SAIR_LOCK_ID:-}"
+
+# Parse flags
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --lock-id)
+            LOCK_ID="$2"
+            shift 2
+            ;;
+        --url)
+            PROXY_URL="$2"
+            shift 2
+            ;;
+        --api-key)
+            API_KEY="$2"
+            shift 2
+            ;;
+        --help|-h)
+            echo "Usage: sair-release [--lock-id ID] [--url URL] [--api-key KEY]" >&2
+            echo "" >&2
+            echo "Releases a device lock acquired by sair-acquire." >&2
+            echo "" >&2
+            echo "Options:" >&2
+            echo "  --lock-id ID   Lock ID to release (default: \$SAIR_LOCK_ID)" >&2
+            echo "  --url URL      Proxy API URL (default: \$SAIR_PROXY_URL)" >&2
+            echo "  --api-key KEY  API key (default: \$SAIR_API_KEY or dev-key-123)" >&2
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            exit 1
+            ;;
+    esac
+done
+
+if [[ -z "$LOCK_ID" ]]; then
+    echo "sair-release: ERROR: no lock ID specified (set SAIR_LOCK_ID or use --lock-id)" >&2
+    exit 1
+fi
+
+# POST /release — proxy closes scoped port and releases orchestrator lock
+echo "sair-release: releasing lock ${LOCK_ID}..." >&2
+HTTP_STATUS=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
+    -H "x-api-key: ${API_KEY}" \
+    "${PROXY_URL}/release?lock_id=${LOCK_ID}") || {
+    echo "sair-release: ERROR: failed to contact proxy" >&2
+    exit 1
+}
+
+case "${HTTP_STATUS}" in
+    200|204)
+        echo "sair-release: released" >&2
+        ;;
+    404|410)
+        echo "sair-release: WARNING: lock not found (may have already expired)" >&2
+        ;;
+    *)
+        echo "sair-release: ERROR: failed to release lock (HTTP ${HTTP_STATUS})" >&2
+        exit 1
+        ;;
+esac
