@@ -1,0 +1,136 @@
+#!/usr/bin/env bash
+# sair-acquire — Acquire a device lock from the SAIR orchestrator.
+#
+# Blocks until the requested devices are available, then prints
+# environment variables to stdout for eval.
+#
+# Usage:
+#   eval $(sair-acquire)                          # lock all devices
+#   eval $(sair-acquire --serial DEVICE_A)        # lock specific device
+#   eval $(sair-acquire --serial DEVICE_A,DEVICE_B)  # lock multiple devices
+#
+# Environment variables:
+#   SAIR_ORCHESTRATOR_URL  Orchestrator dashboard URL (default: http://localhost:8081)
+#   SAIR_API_KEY           API key for authentication (default: dev-key-123)
+#
+# After eval, these are exported:
+#   SAIR_LOCK_ID           Lock ID for releasing later
+#   ANDROID_SERIAL         First acquired device serial
+#   SAIR_SERIALS           Comma-separated list of all acquired serials
+#
+set -euo pipefail
+
+ORCHESTRATOR_URL="${SAIR_ORCHESTRATOR_URL:-http://localhost:8081}"
+API_KEY="${SAIR_API_KEY:-dev-key-123}"
+SERIAL=""
+HEARTBEAT_INTERVAL=60
+
+# Parse flags
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --serial)
+            SERIAL="$2"
+            shift 2
+            ;;
+        --url)
+            ORCHESTRATOR_URL="$2"
+            shift 2
+            ;;
+        --api-key)
+            API_KEY="$2"
+            shift 2
+            ;;
+        --heartbeat-interval)
+            HEARTBEAT_INTERVAL="$2"
+            shift 2
+            ;;
+        --help|-h)
+            echo "Usage: eval \$(sair-acquire [--serial SERIAL[,SERIAL...]] [--url URL] [--api-key KEY])" >&2
+            echo "" >&2
+            echo "Acquires a device lock from the SAIR orchestrator." >&2
+            echo "Blocks until devices are available." >&2
+            echo "" >&2
+            echo "Options:" >&2
+            echo "  --serial SERIAL   Specific device(s) to lock (comma-separated, default: all)" >&2
+            echo "  --url URL         Orchestrator URL (default: \$SAIR_ORCHESTRATOR_URL or http://localhost:8081)" >&2
+            echo "  --api-key KEY     API key (default: \$SAIR_API_KEY or dev-key-123)" >&2
+            echo "  --heartbeat-interval SECS  Heartbeat interval (default: 60)" >&2
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            exit 1
+            ;;
+    esac
+done
+
+# Build acquire URL
+ACQUIRE_URL="${ORCHESTRATOR_URL}/locks/acquire"
+if [[ -n "$SERIAL" ]]; then
+    ACQUIRE_URL="${ACQUIRE_URL}?serial=${SERIAL}"
+fi
+
+echo "sair-acquire: requesting lock from ${ORCHESTRATOR_URL}..." >&2
+if [[ -n "$SERIAL" ]]; then
+    echo "sair-acquire: devices: ${SERIAL}" >&2
+else
+    echo "sair-acquire: devices: all" >&2
+fi
+
+# POST /locks/acquire (blocks until available)
+# Capture both body and HTTP status code for proper error reporting
+RESPONSE=$(curl -s -X POST \
+    -H "x-api-key: ${API_KEY}" \
+    -w '\n%{http_code}' \
+    "${ACQUIRE_URL}") || {
+    echo "sair-acquire: ERROR: failed to contact orchestrator" >&2
+    exit 1
+}
+
+# Separate HTTP status from body
+HTTP_STATUS=$(printf '%s\n' "$RESPONSE" | tail -n1)
+BODY=$(printf '%s\n' "$RESPONSE" | sed '$d')
+
+if [[ "$HTTP_STATUS" -lt 200 || "$HTTP_STATUS" -ge 300 ]]; then
+    echo "sair-acquire: ERROR: failed to acquire lock (HTTP ${HTTP_STATUS})" >&2
+    echo "sair-acquire: response: ${BODY:-<empty>}" >&2
+    exit 1
+fi
+
+# Parse JSON response (simple extraction without jq dependency)
+# Expected format: {"lock_id":"...","serials":["...", "..."]}
+LOCK_ID=$(echo "$BODY" | grep -o '"lock_id":"[^"]*"' | head -1 | cut -d'"' -f4)
+SERIALS=$(echo "$BODY" | grep -o '"serials":\[[^]]*\]' | head -1 | tr -d '[]"' | sed 's/serials://g')
+FIRST_SERIAL=$(echo "$SERIALS" | cut -d',' -f1)
+
+if [[ -z "$LOCK_ID" ]]; then
+    echo "sair-acquire: ERROR: no lock_id in response: ${BODY}" >&2
+    exit 1
+fi
+
+echo "sair-acquire: acquired lock ${LOCK_ID}" >&2
+echo "sair-acquire: devices: ${SERIALS}" >&2
+
+# Start background heartbeat process (survives across CI steps)
+nohup bash -c "
+    while true; do
+        sleep $HEARTBEAT_INTERVAL
+        curl -s -f -X POST \
+            -H \"x-api-key: ${API_KEY}\" \
+            \"${ORCHESTRATOR_URL}/locks/heartbeat?lock_id=${LOCK_ID}\" >/dev/null 2>&1 || exit 0
+    done
+" >/dev/null 2>&1 &
+HEARTBEAT_PID=$!
+disown "$HEARTBEAT_PID" 2>/dev/null || true
+
+# Output eval-able environment variables (shell-escaped to prevent injection)
+echo "export SAIR_LOCK_ID=$(printf '%q' "$LOCK_ID")"
+echo "export SAIR_HEARTBEAT_PID=$(printf '%q' "$HEARTBEAT_PID")"
+echo "export SAIR_SERIALS=$(printf '%q' "$SERIALS")"
+echo "export SAIR_ORCHESTRATOR_URL=$(printf '%q' "$ORCHESTRATOR_URL")"
+# Only set ANDROID_SERIAL when a single device was requested, so that
+# multi-device workflows (e.g. connectedCheck) can target all devices.
+SERIAL_COUNT=$(echo "$SERIALS" | tr ',' '\n' | wc -l)
+if [[ "$SERIAL_COUNT" -eq 1 ]]; then
+    echo "export ANDROID_SERIAL=$(printf '%q' "$FIRST_SERIAL")"
+fi

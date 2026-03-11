@@ -43,19 +43,11 @@ jobs:
           WIFI_PASSWORD: op://Infrastructure/Wi-Fi/password
           SAIR_API_KEY: op://Infrastructure/sair-api-key/credential
 
-      - name: Checkout SAIR tools
-        if: env.HAS_OP_TOKEN == 'true'
-        uses: actions/checkout@v6
-        with:
-          repository: compscidr/sair
-          sparse-checkout: tools
-          path: .sair
-
       - name: Acquire device lock
         if: env.HAS_OP_TOKEN == 'true'
         run: |
-          chmod +x .sair/tools/sair-acquire .sair/tools/sair-release
-          ACQUIRE_OUTPUT=$(.sair/tools/sair-acquire)
+          chmod +x tools/sair-acquire tools/sair-release
+          ACQUIRE_OUTPUT=$(tools/sair-acquire)
           eval "$ACQUIRE_OUTPUT"
           echo "SAIR_LOCK_ID=${SAIR_LOCK_ID}" >> $GITHUB_ENV
           echo "SAIR_HEARTBEAT_PID=${SAIR_HEARTBEAT_PID}" >> $GITHUB_ENV
@@ -127,4 +119,4 @@ jobs:
           fi
       - name: Release device lock
         if: always() && env.HAS_OP_TOKEN == 'true'
-        run: .sair/tools/sair-release
+        run: tools/sair-release

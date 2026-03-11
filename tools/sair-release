@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+# sair-release — Release a device lock from the SAIR orchestrator.
+#
+# Usage:
+#   sair-release                           # uses $SAIR_LOCK_ID from environment
+#   sair-release --lock-id <lock-id>       # explicit lock ID
+#
+# Environment variables (set by sair-acquire):
+#   SAIR_LOCK_ID           Lock ID to release
+#   SAIR_HEARTBEAT_PID     Heartbeat process to stop
+#   SAIR_ORCHESTRATOR_URL  Orchestrator dashboard URL
+#   SAIR_API_KEY           API key for authentication
+#
+set -euo pipefail
+
+ORCHESTRATOR_URL="${SAIR_ORCHESTRATOR_URL:-http://localhost:8081}"
+API_KEY="${SAIR_API_KEY:-dev-key-123}"
+LOCK_ID="${SAIR_LOCK_ID:-}"
+
+# Parse flags
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --lock-id)
+            LOCK_ID="$2"
+            shift 2
+            ;;
+        --url)
+            ORCHESTRATOR_URL="$2"
+            shift 2
+            ;;
+        --api-key)
+            API_KEY="$2"
+            shift 2
+            ;;
+        --help|-h)
+            echo "Usage: sair-release [--lock-id ID] [--url URL] [--api-key KEY]" >&2
+            echo "" >&2
+            echo "Releases a device lock acquired by sair-acquire." >&2
+            echo "" >&2
+            echo "Options:" >&2
+            echo "  --lock-id ID   Lock ID to release (default: \$SAIR_LOCK_ID)" >&2
+            echo "  --url URL      Orchestrator URL (default: \$SAIR_ORCHESTRATOR_URL)" >&2
+            echo "  --api-key KEY  API key (default: \$SAIR_API_KEY)" >&2
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            exit 1
+            ;;
+    esac
+done
+
+if [[ -z "$LOCK_ID" ]]; then
+    echo "sair-release: ERROR: no lock ID specified (set SAIR_LOCK_ID or use --lock-id)" >&2
+    exit 1
+fi
+
+# Stop heartbeat process if running
+if [[ -n "${SAIR_HEARTBEAT_PID:-}" ]]; then
+    kill "$SAIR_HEARTBEAT_PID" 2>/dev/null || true
+fi
+
+# POST /locks/release — differentiate error types
+echo "sair-release: releasing lock ${LOCK_ID}..." >&2
+HTTP_STATUS=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
+    -H "x-api-key: ${API_KEY}" \
+    "${ORCHESTRATOR_URL}/locks/release?lock_id=${LOCK_ID}") || {
+    echo "sair-release: ERROR: failed to contact orchestrator" >&2
+    exit 1
+}
+
+case "${HTTP_STATUS}" in
+    200|204)
+        echo "sair-release: released" >&2
+        ;;
+    404|410)
+        echo "sair-release: WARNING: lock not found (may have already expired)" >&2
+        ;;
+    401|403)
+        echo "sair-release: ERROR: unauthorized (HTTP ${HTTP_STATUS}); check SAIR_API_KEY" >&2
+        exit 1
+        ;;
+    *)
+        echo "sair-release: ERROR: failed to release lock (HTTP ${HTTP_STATUS})" >&2
+        exit 1
+        ;;
+esac
