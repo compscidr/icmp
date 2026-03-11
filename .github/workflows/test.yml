@@ -42,6 +42,19 @@ jobs:
           WIFI_SSID: op://Infrastructure/Wi-Fi/username
           WIFI_PASSWORD: op://Infrastructure/Wi-Fi/password
           SAIR_API_KEY: op://Infrastructure/sair-api-key/credential
+
+      - name: Acquire device lock
+        if: env.HAS_OP_TOKEN == 'true'
+        run: |
+          curl -sfL https://raw.githubusercontent.com/compscidr/sair/main/tools/sair-acquire -o /tmp/sair-acquire
+          curl -sfL https://raw.githubusercontent.com/compscidr/sair/main/tools/sair-release -o /tmp/sair-release
+          chmod +x /tmp/sair-acquire /tmp/sair-release
+          ACQUIRE_OUTPUT=$(/tmp/sair-acquire)
+          eval "$ACQUIRE_OUTPUT"
+          echo "SAIR_LOCK_ID=${SAIR_LOCK_ID}" >> $GITHUB_ENV
+          echo "SAIR_HEARTBEAT_PID=${SAIR_HEARTBEAT_PID}" >> $GITHUB_ENV
+          echo "SAIR_SERIALS=${SAIR_SERIALS}" >> $GITHUB_ENV
+
       - name: Connect phone to Wi-Fi
         if: env.HAS_OP_TOKEN == 'true'
         run: |
@@ -62,18 +75,6 @@ jobs:
           max_attempts: 3
           command: ./gradlew check
 
-      - name: Acquire device lock
-        if: env.HAS_OP_TOKEN == 'true'
-        run: |
-          curl -sfL https://raw.githubusercontent.com/compscidr/sair/main/tools/sair-acquire -o /tmp/sair-acquire
-          curl -sfL https://raw.githubusercontent.com/compscidr/sair/main/tools/sair-release -o /tmp/sair-release
-          chmod +x /tmp/sair-acquire /tmp/sair-release
-          ACQUIRE_OUTPUT=$(/tmp/sair-acquire)
-          eval "$ACQUIRE_OUTPUT"
-          echo "SAIR_LOCK_ID=${SAIR_LOCK_ID}" >> $GITHUB_ENV
-          echo "SAIR_HEARTBEAT_PID=${SAIR_HEARTBEAT_PID}" >> $GITHUB_ENV
-          echo "SAIR_SERIALS=${SAIR_SERIALS}" >> $GITHUB_ENV
-
       - name: Uninstall stale APKs
         if: env.HAS_OP_TOKEN == 'true'
         run: |
@@ -88,10 +89,6 @@ jobs:
           timeout_minutes: 20
           max_attempts: 3
           command: ./gradlew connectedCheck
-
-      - name: Release device lock
-        if: always() && env.HAS_OP_TOKEN == 'true'
-        run: /tmp/sair-release
 
       - name: Upload ICMP Common Unit Tests Report to CodeCov
         # https://github.com/codecov/codecov-action
@@ -122,3 +119,6 @@ jobs:
           else
             echo "WIFI_SSID is not set; skipping Wi-Fi disconnect."
           fi
+      - name: Release device lock
+        if: always() && env.HAS_OP_TOKEN == 'true'
+        run: /tmp/sair-release
