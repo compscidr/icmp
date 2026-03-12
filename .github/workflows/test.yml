@@ -114,7 +114,7 @@ jobs:
           flags: instrumentedtests
           files: ./icmp-android/build/reports/coverage/androidTest/debug/connected/report.xml
       - name: Disconnect phone from Wi-Fi
-        if: always()
+        if: always() && env.SAIR_LOCK_ID != ''
         run: |
           if [ -n "$WIFI_SSID" ]; then
             adb shell cmd wifi forget-network "$WIFI_SSID"
@@ -122,5 +122,5 @@ jobs:
             echo "WIFI_SSID is not set; skipping Wi-Fi disconnect."
           fi
       - name: Release device lock
-        if: always() && env.HAS_OP_TOKEN == 'true'
+        if: always() && env.SAIR_LOCK_ID != ''
         run: sair-release
