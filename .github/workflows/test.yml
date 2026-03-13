@@ -19,7 +19,6 @@ jobs:
     runs-on: self-hosted
     env:
       HAS_OP_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN != '' }}
-      SAIR_PROXY_URL: http://sair-adb-proxy:8550
     steps:
       - uses: actions/checkout@v6
       - name: set up JDK
@@ -56,16 +55,13 @@ jobs:
           max_attempts: 3
           command: ./gradlew check
 
+      - name: Install SAIR tools
+        if: env.HAS_OP_TOKEN == 'true'
+        run: curl -fsSL https://raw.githubusercontent.com/compscidr/sair/v0.0.3/install.sh | bash
+
       - name: Acquire device lock
         if: env.HAS_OP_TOKEN == 'true'
-        run: |
-          chmod +x tools/sair-acquire tools/sair-release
-          ACQUIRE_OUTPUT=$(tools/sair-acquire)
-          eval "$ACQUIRE_OUTPUT"
-          echo "SAIR_LOCK_ID=${SAIR_LOCK_ID}" >> $GITHUB_ENV
-          echo "SAIR_SERIALS=${SAIR_SERIALS}" >> $GITHUB_ENV
-          echo "SAIR_PROXY_URL=${SAIR_PROXY_URL}" >> $GITHUB_ENV
-          echo "ANDROID_ADB_SERVER_PORT=${ANDROID_ADB_SERVER_PORT}" >> $GITHUB_ENV
+        run: sair-acquire | sed 's/^export //' >> $GITHUB_ENV
 
       - name: Connect phone to Wi-Fi
         if: env.HAS_OP_TOKEN == 'true'
@@ -112,7 +108,7 @@ jobs:
           flags: instrumentedtests
           files: ./icmp-android/build/reports/coverage/androidTest/debug/connected/report.xml
       - name: Disconnect phone from Wi-Fi
-        if: always()
+        if: always() && env.SAIR_LOCK_ID != ''
         run: |
           if [ -n "$WIFI_SSID" ]; then
             adb shell cmd wifi forget-network "$WIFI_SSID"
@@ -120,5 +116,5 @@ jobs:
             echo "WIFI_SSID is not set; skipping Wi-Fi disconnect."
           fi
       - name: Release device lock
-        if: always() && env.HAS_OP_TOKEN == 'true'
-        run: tools/sair-release
+        if: always() && env.SAIR_LOCK_ID != ''
+        run: sair-release
