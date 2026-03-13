@@ -57,17 +57,11 @@ jobs:
 
       - name: Install SAIR tools
         if: env.HAS_OP_TOKEN == 'true'
-        run: curl -fsSL https://raw.githubusercontent.com/compscidr/sair/main/install.sh | bash
+        run: curl -fsSL https://raw.githubusercontent.com/compscidr/sair/v0.0.3/install.sh | bash
 
       - name: Acquire device lock
         if: env.HAS_OP_TOKEN == 'true'
-        run: |
-          ACQUIRE_OUTPUT=$(sair-acquire)
-          eval "$ACQUIRE_OUTPUT"
-          echo "SAIR_LOCK_ID=${SAIR_LOCK_ID}" >> $GITHUB_ENV
-          echo "SAIR_SERIALS=${SAIR_SERIALS}" >> $GITHUB_ENV
-          echo "SAIR_PROXY_URL=${SAIR_PROXY_URL}" >> $GITHUB_ENV
-          echo "ANDROID_ADB_SERVER_PORT=${ANDROID_ADB_SERVER_PORT}" >> $GITHUB_ENV
+        run: sair-acquire | sed 's/^export //' >> $GITHUB_ENV
 
       - name: Connect phone to Wi-Fi
         if: env.HAS_OP_TOKEN == 'true'
