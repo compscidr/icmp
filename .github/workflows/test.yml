@@ -49,7 +49,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew assemble          # we don't use build because that will run the tests, we want that separate
       - name: JVM Unit tests
-        uses: nick-fields/retry@v3
+        uses: nick-fields/retry@v4
         with:
           timeout_minutes: 20
           max_attempts: 3
@@ -80,7 +80,7 @@ jobs:
           done
 
       - name: Android Instrumented tests # disable if you don't have a phone attached to the runner
-        uses: nick-fields/retry@v3
+        uses: nick-fields/retry@v4
         with:
           timeout_minutes: 20
           max_attempts: 3
