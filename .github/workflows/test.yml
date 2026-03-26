@@ -88,21 +88,21 @@ jobs:
 
       - name: Upload ICMP Common Unit Tests Report to CodeCov
         # https://github.com/codecov/codecov-action
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: commonunittests
           files: ./icmp-common/build/reports/jacoco/test/jacocoTestReport.xml
       - name: Upload ICMP Linux Unit Tests Report to CodeCov
         # https://github.com/codecov/codecov-action
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: linuxunittests
           files: ./icmp-linux/build/reports/jacoco/test/jacocoTestReport.xml
       - name: Upload Instrumented Tests Report to CodeCov
         # https://github.com/codecov/codecov-action
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: instrumentedtests
