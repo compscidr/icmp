@@ -16,7 +16,7 @@ mannodermaus_junit5_plugin = "2.0.1"
 mannodermaus_junit5 = "2.0.1"
 material = "1.13.0"
 mockk = "1.14.9"
-slf4jApi = "2.0.17"
+slf4jApi = "2.0.18"
 
 [libraries]
 androidx_lifecycle_viewmodel_ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "androidx_lifecycle" }
