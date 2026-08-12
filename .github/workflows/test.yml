@@ -20,7 +20,7 @@ jobs:
     env:
       HAS_OP_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN != '' }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: set up JDK
         uses: actions/setup-java@v5.7.0
         with:
