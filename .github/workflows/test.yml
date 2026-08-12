@@ -40,7 +40,7 @@ jobs:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
           WIFI_SSID: op://Infrastructure/Wi-Fi/username
           WIFI_PASSWORD: op://Infrastructure/Wi-Fi/password
-          SAIR_API_KEY: op://Infrastructure/sair-api-key/credential
+          SAIR_API_KEY: op://Infrastructure/sair-user-api-key/credential
 
       - name: Build and Publish the Common Library to the local Maven repository
         run: ./gradlew :icmp-common:publishToMavenLocal
@@ -57,11 +57,15 @@ jobs:
 
       - name: Install SAIR tools
         if: env.HAS_OP_TOKEN == 'true'
-        run: curl -fsSL https://raw.githubusercontent.com/compscidr/sair/v0.0.3/install.sh | bash
+        run: curl -fsSL https://raw.githubusercontent.com/compscidr/sair/v0.0.12/install.sh | bash
 
+      # Capture output in a variable rather than piping, so a sair-acquire
+      # failure fails this step instead of being masked by sed's exit code.
       - name: Acquire device lock
         if: env.HAS_OP_TOKEN == 'true'
-        run: sair-acquire | sed 's/^export //' >> $GITHUB_ENV
+        run: |
+          ACQUIRE_OUTPUT=$(sair-acquire --count 1)
+          echo "$ACQUIRE_OUTPUT" | sed -n 's/^export //p' >> "$GITHUB_ENV"
 
       - name: Connect phone to Wi-Fi
         if: env.HAS_OP_TOKEN == 'true'
