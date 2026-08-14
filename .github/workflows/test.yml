@@ -33,7 +33,7 @@ jobs:
         run: chmod +x gradlew
       - name: Load secrets from 1Password
         if: env.HAS_OP_TOKEN == 'true'
-        uses: 1password/load-secrets-action@v4
+        uses: 1password/load-secrets-action@v5
         with:
           export-env: true
         env:
