@@ -1,19 +1,5 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:base"
-  ],
-  "ignoreDeps": ["com.jasonernst.icmp:icmp_common", "com.jasonernst.icmp:icmp_android", "com.jasonernst.icmp:icmp_linux"],
-  "packageRules": [
-    {
-      "description": "Automerge non-major updates",
-      "matchUpdateTypes": ["minor", "patch"],
-      "automerge": true
-    },
-    {
-      "description": "Hold junit-bom on 5.x: the android-junit5 runner refuses to run Jupiter instrumented tests below API 35 on JUnit 6, which would drop on-device coverage for every device older than Android 15. Revisit when the device farm is all API 35+.",
-      "matchPackageNames": ["org.junit:junit-bom"],
-      "allowedVersions": "<6"
-    }
-  ]
+  "extends": ["github>compscidr/renovate-config:android-junit5"],
+  "ignoreDeps": ["com.jasonernst.icmp:icmp_common", "com.jasonernst.icmp:icmp_android", "com.jasonernst.icmp:icmp_linux"]
 }
