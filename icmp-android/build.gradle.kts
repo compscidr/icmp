@@ -12,7 +12,7 @@ plugins {
 
 android {
     namespace = "com.jasonernst.icmp_lib"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 29

@@ -14,7 +14,7 @@ gitVersioning.apply {
 
 android {
     namespace = "com.jasonernst.icmp"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.jasonernst.icmp.icmp_android"
