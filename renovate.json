@@ -9,6 +9,11 @@
       "description": "Automerge non-major updates",
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
+    },
+    {
+      "description": "Hold junit-bom on 5.x: the android-junit5 runner refuses to run Jupiter instrumented tests below API 35 on JUnit 6, which would drop on-device coverage for every device older than Android 15. Revisit when the device farm is all API 35+.",
+      "matchPackageNames": ["org.junit:junit-bom"],
+      "allowedVersions": "<6"
     }
   ]
 }
