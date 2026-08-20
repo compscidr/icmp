@@ -16,7 +16,7 @@ jobs:
     # if you fork this repo, you should change this to ubuntu-latest
     # you should also disable ipv6 tests, and the android tests
     # (the self-hosted tests have ipv6 on the host and a phone attached to the runner)
-    runs-on: self-hosted
+    runs-on: [self-hosted, sair-enabled]
     env:
       HAS_OP_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN != '' }}
     steps:
