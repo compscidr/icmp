@@ -67,10 +67,24 @@ jobs:
           ACQUIRE_OUTPUT=$(sair-acquire --count 1)
           echo "$ACQUIRE_OUTPUT" | sed -n 's/^export //p' >> "$GITHUB_ENV"
 
+      # `adb shell` exits 0 even when the remote command throws, and
+      # `cmd wifi connect-network` is blocked for the shell uid on some devices
+      # (SecurityException on Android 14 Samsung, allowed on Android 16). So
+      # assert connectivity instead of trusting the connect call: one ping to a
+      # hostname covers DNS, ICMP and routing, which is what the instrumented
+      # tests need. Deliberately not jasonernst.com - pingDnsTimeout wants a
+      # cold DNS cache for that host.
       - name: Connect phone to Wi-Fi
         if: env.HAS_OP_TOKEN == 'true'
         run: |
-          adb shell cmd wifi connect-network "$WIFI_SSID" wpa2 "$WIFI_PASSWORD"
+          adb shell cmd wifi connect-network "$WIFI_SSID" wpa2 "$WIFI_PASSWORD" || true
+          for _ in $(seq 30); do
+            adb shell ping -c1 -W2 google.com >/dev/null 2>&1 && exit 0
+            sleep 2
+          done
+          echo "::error::$ANDROID_SERIAL has no network - Wi-Fi setup failed"
+          adb shell cmd wifi status
+          exit 1
       - name: Clear Wi-Fi password from environment
         if: env.HAS_OP_TOKEN == 'true'
         run: echo "WIFI_PASSWORD=" >> "$GITHUB_ENV"
