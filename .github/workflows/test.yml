@@ -102,7 +102,7 @@ jobs:
         with:
           timeout_minutes: 20
           max_attempts: 3
-          command: ./gradlew connectedCheck
+          command: ./gradlew connectedCheck --stacktrace
 
       - name: Upload ICMP Common Unit Tests Report to CodeCov
         # https://github.com/codecov/codecov-action
