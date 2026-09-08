@@ -74,10 +74,8 @@ jobs:
           sdk="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
           shim="$RUNNER_TEMP/sdk-shim"
           rm -rf "$shim" && mkdir -p "$shim/platform-tools"
-          ln -s "$sdk"/* "$shim/"
-          rm "$shim/platform-tools" && mkdir "$shim/platform-tools"
-          ln -s "$sdk"/platform-tools/* "$shim/platform-tools/"
-          rm "$shim/platform-tools/adb"
+          for f in "$sdk"/*; do [ "$(basename "$f")" = platform-tools ] || ln -s "$f" "$shim/"; done
+          for f in "$sdk"/platform-tools/*; do [ "$(basename "$f")" = adb ] || ln -s "$f" "$shim/platform-tools/"; done
           printf '#!/bin/sh\nexec "%s/platform-tools/adb" -P %s "$@"\n' "$sdk" "$ANDROID_ADB_SERVER_PORT" > "$shim/platform-tools/adb"
           chmod +x "$shim/platform-tools/adb"
           echo "ANDROID_HOME=$shim" >> "$GITHUB_ENV"
