@@ -102,7 +102,7 @@ jobs:
         with:
           timeout_minutes: 20
           max_attempts: 3
-          command: ./gradlew connectedCheck
+          command: ./gradlew -I .github/gradle/sair-adb.init.gradle.kts -PadbServerPort=${{ env.ANDROID_ADB_SERVER_PORT }} connectedCheck
 
       - name: Upload ICMP Common Unit Tests Report to CodeCov
         # https://github.com/codecov/codecov-action
