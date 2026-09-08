@@ -66,11 +66,6 @@ jobs:
         run: |
           ACQUIRE_OUTPUT=$(sair-acquire --count 1)
           echo "$ACQUIRE_OUTPUT" | sed -n 's/^export //p' >> "$GITHUB_ENV"
-          # The Gradle daemon started before the lock existed. AGP 9.4+ runs
-          # instrumented tests in a process-isolated worker, which inherits the
-          # daemon's original environment, not the ANDROID_ADB_SERVER_PORT we
-          # just exported. Restart the daemon so the scoped port reaches adb.
-          ./gradlew --stop
 
       # `adb shell` exits 0 even when the remote command throws, and
       # `cmd wifi connect-network` is blocked for the shell uid on some devices
