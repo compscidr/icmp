@@ -116,8 +116,18 @@ jobs:
         with:
           timeout_minutes: 20
           max_attempts: 3
-          command: ./gradlew connectedCheck
+          command: ./gradlew connectedCheck --stacktrace
 
+      - name: tmp upload android test outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-test-outputs
+          path: |
+            icmp-android/build/outputs/code_coverage/
+            icmp-android/build/outputs/androidTest-results/
+            icmp-android/build/reports/androidTests/
+          if-no-files-found: warn
       - name: Upload ICMP Common Unit Tests Report to CodeCov
         # https://github.com/codecov/codecov-action
         uses: codecov/codecov-action@v7
