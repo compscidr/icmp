@@ -66,6 +66,22 @@ jobs:
         run: |
           ACQUIRE_OUTPUT=$(sair-acquire --count 1)
           echo "$ACQUIRE_OUTPUT" | sed -n 's/^export //p' >> "$GITHUB_ENV"
+          eval "$ACQUIRE_OUTPUT"
+          # AGP 9.4+ runs instrumented tests in a process-isolated Gradle worker
+          # whose environment is empty, so the adb it shells out to never sees
+          # ANDROID_ADB_SERVER_PORT and lands on the bare proxy port. Point the
+          # build at a shadow SDK whose adb has the scoped port baked in.
+          sdk="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          shim="$RUNNER_TEMP/sdk-shim"
+          rm -rf "$shim" && mkdir -p "$shim/platform-tools"
+          ln -s "$sdk"/* "$shim/"
+          rm "$shim/platform-tools" && mkdir "$shim/platform-tools"
+          ln -s "$sdk"/platform-tools/* "$shim/platform-tools/"
+          rm "$shim/platform-tools/adb"
+          printf '#!/bin/sh\nexec "%s/platform-tools/adb" -P %s "$@"\n' "$sdk" "$ANDROID_ADB_SERVER_PORT" > "$shim/platform-tools/adb"
+          chmod +x "$shim/platform-tools/adb"
+          echo "ANDROID_HOME=$shim" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$shim" >> "$GITHUB_ENV"
 
       # `adb shell` exits 0 even when the remote command throws, and
       # `cmd wifi connect-network` is blocked for the shell uid on some devices
@@ -102,18 +118,8 @@ jobs:
         with:
           timeout_minutes: 20
           max_attempts: 3
-          command: ./gradlew connectedCheck --stacktrace
+          command: ./gradlew connectedCheck
 
-      - name: tmp upload android test outputs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-test-outputs
-          path: |
-            icmp-android/build/outputs/code_coverage/
-            icmp-android/build/outputs/androidTest-results/
-            icmp-android/build/reports/androidTests/
-          if-no-files-found: warn
       - name: Upload ICMP Common Unit Tests Report to CodeCov
         # https://github.com/codecov/codecov-action
         uses: codecov/codecov-action@v7
