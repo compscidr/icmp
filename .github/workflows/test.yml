@@ -111,6 +111,20 @@ jobs:
             adb -s "$serial" uninstall com.jasonernst.icmp_lib.test 2>&1 | grep -v "DELETE_FAILED_INTERNAL_ERROR" || true
           done
 
+      - name: tmp adb shell v2 probe
+        if: env.HAS_OP_TOKEN == 'true'
+        run: |
+          set +e
+          A="$ANDROID_HOME/platform-tools/adb"
+          echo "shim: $(cat "$A")"
+          "$A" host-features; echo "host-features exit=$?"
+          "$A" shell am get-current-user; echo "get-current-user exit=$?"
+          "$A" shell 'echo out; echo err 1>&2; exit 3'; echo "exit-code-propagation exit=$?"
+          "$A" shell echo hi | xxd
+          "$A" exec-out echo raw | xxd
+          "$A" shell ls /sdcard/googletest 2>&1 | head -3; echo "ls exit=$?"
+          "$A" shell pm list users
+          "$A" shell getprop ro.build.version.sdk
       - name: Android Instrumented tests # disable if you don't have a phone attached to the runner
         uses: nick-fields/retry@v4
         with:
