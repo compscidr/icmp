@@ -55,15 +55,21 @@ jobs:
           max_attempts: 3
           command: ./gradlew check
 
-      - name: Install SAIR tools
+      # Only the two bash tools are needed here; the proxy runs on the host.
+      - name: Fetch SAIR tools
         if: env.HAS_OP_TOKEN == 'true'
-        run: curl -fsSL https://raw.githubusercontent.com/compscidr/sair/v0.0.16/install.sh | bash
+        uses: actions/checkout@v7
+        with:
+          repository: compscidr/sair
+          ref: v0.0.17
+          sparse-checkout: tools
+          path: sair
 
       # sair-acquire (v0.0.16+) appends its exports to $GITHUB_ENV itself.
       - name: Acquire device lock
         if: env.HAS_OP_TOKEN == 'true'
         run: |
-          sair-acquire --count 1 > /dev/null
+          sair/tools/sair-acquire --count 1 > /dev/null
 
       # `adb shell` exits 0 even when the remote command throws, and
       # `cmd wifi connect-network` is blocked for the shell uid on some devices
@@ -135,4 +141,4 @@ jobs:
           fi
       - name: Release device lock
         if: always() && env.SAIR_LOCK_ID != ''
-        run: sair-release
+        run: sair/tools/sair-release --status ${{ job.status }}
