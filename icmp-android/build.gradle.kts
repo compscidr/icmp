@@ -61,6 +61,14 @@ android {
     }
 }
 
+// AGP 9.4's test engine serialises instrumentation args as "k=v,k=v" and the
+// android-junit5 plugin's configurationParameters value is itself "k=v", so it
+// gets shredded and `am instrument` fails with "Invalid userId -2". We set no
+// configuration parameters, so drop the arg. Remove once AGP escapes values.
+androidComponents {
+    finalizeDsl { it.defaultConfig.testInstrumentationRunnerArguments.remove("configurationParameters") }
+}
+
 junitPlatform {
     // this is for the non-android unit tests, only required with the mannodermaus plugin
     jacocoOptions {
