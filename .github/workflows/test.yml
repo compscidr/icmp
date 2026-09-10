@@ -64,6 +64,7 @@ jobs:
           ref: v0.0.17
           sparse-checkout: tools
           path: sair
+          persist-credentials: false
 
       # sair-acquire (v0.0.16+) appends its exports to $GITHUB_ENV itself.
       - name: Acquire device lock
