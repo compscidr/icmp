@@ -57,7 +57,7 @@ jobs:
 
       - name: Install SAIR tools
         if: env.HAS_OP_TOKEN == 'true'
-        run: curl -fsSL https://raw.githubusercontent.com/compscidr/sair/v0.0.12/install.sh | bash
+        run: curl -fsSL https://raw.githubusercontent.com/compscidr/sair/v0.0.15/install.sh | bash
 
       # Capture output in a variable rather than piping, so a sair-acquire
       # failure fails this step instead of being masked by sed's exit code.
@@ -66,24 +66,6 @@ jobs:
         run: |
           ACQUIRE_OUTPUT=$(sair-acquire --count 1)
           echo "$ACQUIRE_OUTPUT" | sed -n 's/^export //p' >> "$GITHUB_ENV"
-          port=$(echo "$ACQUIRE_OUTPUT" | sed -n 's/^export ANDROID_ADB_SERVER_PORT=//p')
-          # AGP 9.4+ runs instrumented tests in a process-isolated Gradle worker
-          # whose environment is empty, so the adb it shells out to never sees
-          # ANDROID_ADB_SERVER_PORT and lands on the bare proxy port. Point the
-          # build at a shadow SDK whose adb has the scoped port baked in.
-          sdk="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
-          if [ -z "$port" ] || [ ! -x "$sdk/platform-tools/adb" ]; then
-            echo "::error::need a scoped ADB port ('$port') and an SDK with platform-tools/adb ('$sdk')"
-            exit 1
-          fi
-          shim="$RUNNER_TEMP/sdk-shim"
-          rm -rf "$shim" && mkdir -p "$shim/platform-tools"
-          for f in "$sdk"/*; do [ "$(basename "$f")" = platform-tools ] || ln -s "$f" "$shim/"; done
-          for f in "$sdk"/platform-tools/*; do [ "$(basename "$f")" = adb ] || ln -s "$f" "$shim/platform-tools/"; done
-          printf '#!/bin/sh\nexec "%s/platform-tools/adb" -P %s "$@"\n' "$sdk" "$port" > "$shim/platform-tools/adb"
-          chmod +x "$shim/platform-tools/adb"
-          echo "ANDROID_HOME=$shim" >> "$GITHUB_ENV"
-          echo "ANDROID_SDK_ROOT=$shim" >> "$GITHUB_ENV"
 
       # `adb shell` exits 0 even when the remote command throws, and
       # `cmd wifi connect-network` is blocked for the shell uid on some devices
