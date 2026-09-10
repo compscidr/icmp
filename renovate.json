@@ -1,5 +1,12 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>compscidr/renovate-config:android-junit5"],
-  "ignoreDeps": ["com.jasonernst.icmp:icmp_common", "com.jasonernst.icmp:icmp_android", "com.jasonernst.icmp:icmp_linux"]
+  "extends": [
+    "github>compscidr/renovate-config:android-junit5",
+    "github>compscidr/renovate-config:sair"
+  ],
+  "ignoreDeps": [
+    "com.jasonernst.icmp:icmp_common",
+    "com.jasonernst.icmp:icmp_android",
+    "com.jasonernst.icmp:icmp_linux"
+  ]
 }
