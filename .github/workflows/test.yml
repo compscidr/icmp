@@ -61,7 +61,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: compscidr/sair
-          ref: v0.0.21
+          ref: v0.1.0
           sparse-checkout: tools
           path: sair
           persist-credentials: false
