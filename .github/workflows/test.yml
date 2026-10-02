@@ -67,10 +67,11 @@ jobs:
           persist-credentials: false
 
       # sair-acquire (v0.0.16+) appends its exports to $GITHUB_ENV itself.
+      # Bot-authored PRs (Renovate) queue behind everyone else while the phones are busy.
       - name: Acquire device lock
         if: env.HAS_OP_TOKEN == 'true'
         run: |
-          sair/tools/sair-acquire --count 1 > /dev/null
+          sair/tools/sair-acquire --count 1 --priority ${{ github.event.pull_request.user.type == 'Bot' && -1 || 0 }} > /dev/null
 
       # A network suggestion, not a saved network: `cmd wifi connect-network`
       # is blocked for the shell uid on Android 14 (SM-A065M) while
