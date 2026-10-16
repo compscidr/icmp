@@ -58,7 +58,7 @@ cmake = { id = "dev.welbyseely.gradle-cmake-plugin", version = "0.1.0"}
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 de-mannodermaus-android-junit5 = { id = "de.mannodermaus.android-junit", version.ref = "mannodermaus_junit5_plugin" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
-git-version = { id = "me.qoomon.git-versioning", version = "6.4.4" }
+git-version = { id = "me.qoomon.git-versioning", version = "7.0.0" }
 gradleup-nmcp = { id = "com.gradleup.nmcp.aggregation", version = "1.6.2"}
 kotlinter = { id = "org.jmailen.kotlinter", version.ref = "kotlinter" }
 org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
