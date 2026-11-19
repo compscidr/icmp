@@ -24,7 +24,7 @@ jobs:
       - name: set up JDK
         uses: actions/setup-java@v6.3.0
         with:
-          java-version: '25.0.5+8.0.LTS'
+          java-version: '25.0.5+100000002.0.LTS'
           distribution: 'temurin'
 #          cache: gradle # https://github.com/actions/setup-java/issues/683
       - name: Display host of runner
